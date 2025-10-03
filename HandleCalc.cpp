@@ -36,21 +36,21 @@ void Calculate(FILE *fin, FILE *fout, Stack_Info *stk) {
                 break;
 
             case (Add):
-                if (Add_C(stk, stdout) != kSuccess) {
+                if (StackOperation(stk, Add_C, stdout) != kSuccess) {
                     fprintf(stderr, "Error: ADD failed.\n");
                     goto cleanup;
                 }
                 break;
 
             case (Sub):
-                if (Sub_C(stk, stdout) != kSuccess) {
+                if (StackOperation(stk, Sub_C, stdout) != kSuccess) {
                     fprintf(stderr, "Error: SUB failed.\n");
                     goto cleanup;
                 }
                 break;
 
             case (Mul):
-                if (Mul_C(stk, stdout) != kSuccess) {
+                if (StackOperation(stk, Mul_C, stdout) != kSuccess) {
                     fprintf(stderr, "Error: MUL failed.\n");
                     goto cleanup;
                 }
@@ -78,7 +78,6 @@ void Calculate(FILE *fin, FILE *fout, Stack_Info *stk) {
                 break;
 
             case (Hlt):
-                printf("%d \n", 66 * 66 - 4 * 15 * 5);
                 goto cleanup;
 
             default:
@@ -87,8 +86,33 @@ void Calculate(FILE *fin, FILE *fout, Stack_Info *stk) {
         }
     }
 
-cleanup:
-    free(stk->data);
-    fclose(fin);
-    fclose(fout);
+    cleanup:
+        free(stk->data);
+        fclose(fin); //
+        fclose(fout);
+}
+
+FILE *OpenFile(const char *filename, const char *mode) {
+    assert(filename);
+    assert(mode);
+
+    FILE *file = fopen(filename, mode);
+    if (file == NULL) {
+        perror("fopen() failed");
+        return NULL;
+    }
+
+    return file;
+}
+
+StackErr_t CloseFile(FILE *file) {
+    assert(file);
+
+    int status = fclose(file);
+    if (status != 0) {
+        perror("fclose() failed");
+        return kErrorClosing;
+    }
+
+    return kSuccess;
 }

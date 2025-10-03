@@ -8,6 +8,10 @@ typedef int Stack_t;
 #define MY_SPEC "%d"
 const Stack_t POISON = 1e6;
 
+
+#define READ_MODE "r"
+#define WRITE_MODE "w"
+
 enum StackErr_t {
     kErrorEmptyStack       = 1 << 0,
     kErrorStackNullPointer = 1 << 1,
@@ -25,6 +29,8 @@ enum StackErr_t {
     kNoCommandFound        = 1 << 12,
 
     kErrorOpening          = 1 << 13,
+    kErrorClosing          = 1 << 14,
+    kErrorParsing          = 1 << 15,
     kSuccess               = 0,
 };
 

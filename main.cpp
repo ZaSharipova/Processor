@@ -4,38 +4,31 @@
 #include "StructsEnums.h"
 #include "CalculatorCommands.h"
 #include "HandleCalc.h"
+#include "StackFunctions.h"
 
 int main(int argc, char *argv[]) {
     if (argc < 3) {
-        fprintf(stderr, "%s. commands failed,\n", argv[0]);
-        return 1;
+        fprintf(stderr, "%s. commands input failed.\n", argv[0]);
+        return kErrorParsing;
     }
 
+    StackErr_t err = kSuccess;
+
     const char *infilename = argv[1];
-    FILE *fin = fopen(infilename, "r");
+    FILE *fin = OpenFile(infilename, READ_MODE);
     if (!fin) {
-        perror("Error opening input file,");
-        return 1;
+        return kErrorOpening;
     }
 
     const char *outfilename = argv[2];
-    FILE *fout = fopen(outfilename, "w");
+    FILE *fout = OpenFile(outfilename, WRITE_MODE);
     if (!fout) {
-        perror("Error opening output file.");
-        fclose(fin);
-        return 1;
+        return kErrorOpening;
     }
 
     Stack_Info stk = {};
-    stk.capacity = 1;
-    stk.size = 0;
-    stk.data = (Stack_t *) calloc ((size_t)stk.capacity, sizeof(Stack_t));
-    if (!stk.data) {
-        fprintf(stderr, "Memory allocation failed.\n");
-        fclose(fin);
-        fclose(fout);
-        return 1;
-    }
+    CHECK_ERROR_RETURN(StackCtor(&stk, 1, stdout));
 
+    printf("%d\n", 66 * 66 - 4 * 15 * 5);
     Calculate(fin, fout, &stk);
 }
