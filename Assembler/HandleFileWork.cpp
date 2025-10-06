@@ -160,8 +160,7 @@ void HandleWriteCommands(FILE *output, FileInfo *file_info, int *buf_out) {
     }
 }
 
-int HandleAsm(const char **argv, FileInfo *file_info, Files in_out_files) {
-    assert(argv);
+int HandleAsm(FileInfo *file_info, Files in_out_files) {
     assert(file_info);
 
     PossibleErrors err = HandleBufRead(in_out_files, file_info);
@@ -174,20 +173,15 @@ int HandleAsm(const char **argv, FileInfo *file_info, Files in_out_files) {
     for (int i = 0; i < file_info->count_lines; i++) {
         LineInfo *line = &file_info->text_ptr[i];
         size_t len = line->size + 1;
-
-        char *line_buf = (char *) calloc (len + 1, sizeof(char));
-        memcpy(line_buf, line->start_ptr, len); //
-        line_buf[len] = '\0';
         
         int args_check = 0;
-        int handle_error = HandleParse(line_buf, file_info, &buf_out, &args_check);
+        int handle_error = HandleParse(line->start_ptr, file_info, &buf_out, &args_check);
         if (handle_error < 0) {
             free(buf_out);
-            fprintf(stderr, "Parse error on line %d: %s\n", i + 1, line_buf);
+            fprintf(stderr, "Parse error on line %d\n", i + 1);
             return handle_error;
         }
 
-        free(line_buf);
     }
     
     HandleWriteCommands(in_out_files.open_out_file, file_info, buf_out);
