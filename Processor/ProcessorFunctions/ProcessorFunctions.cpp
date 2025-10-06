@@ -43,6 +43,6 @@ StackErr_t ProcessorDtor(FILE *open_log_file, Processor *processor_info) {
     CHECK_ERROR_RETURN(ProcessorVerify(processor_info, open_log_file));
 
     StackDtor(&processor_info->stack, open_log_file);
-    processor_info = NULL;;
+    processor_info = NULL;
     return kSuccess;
 }
