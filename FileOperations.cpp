@@ -7,7 +7,7 @@
 #include <assert.h>
 #include <sys/stat.h>
 
-#include "/Users/zarinasharipova/Calculator/StructsEnums.h"
+#include "../Calculator/StructsEnums.h"
 
 size_t SizeOfFile(const char *filename) {
     assert(filename);
