@@ -1,26 +1,24 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
 #include <assert.h>
-#include <sys/stat.h>
 
-#include "StructsEnums.h"
-#include "HandleFileWork.h"
+#include "../Calculator/StructsEnums.h"
+#include "../Assembler/HandleFileWork.h"
+#include "../Calculator/Parse/ParseCommandLine.h"
 
-int main(int argc, char *argv[]) {
-    assert(argv);
+int main(int argc, const char *argv[]) {
+    Files in_out_files = {NULL, NULL, NULL, NULL};
 
-    if (argc < 3) {
-        fprintf(stderr, "%s, not enough arguments.\n", argv[0]);
-        return kErrorParsing;
-    }
+    ParseErr_t read_write_error = kNoError;
+    int err = 0;
 
-    const char *input_filename = argv[1];
-    const char *output_filename = argv[2];
+    CALL_CHECK_IN_OUT_RETURN(ParseCommandLine(argv, argc, &in_out_files));
+    CALL_CHECK_IN_OUT_RETURN(HandleOpenFile(&in_out_files));
 
     FileInfo file_info = {};
 
-    return HandleAsm(argv, input_filename, output_filename, &file_info);
+    return HandleAsm(argv, &file_info, in_out_files);
 
+    CALL_CHECK_IN_OUT_RETURN(HandleCloseFile(in_out_files));
+    return 0;
 }

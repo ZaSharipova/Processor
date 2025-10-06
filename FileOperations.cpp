@@ -7,32 +7,7 @@
 #include <assert.h>
 #include <sys/stat.h>
 
-#include "StructsEnums.h"
-
-FILE *OpenFile(const char *filename, const char *mode) {
-    assert(filename);
-    assert(mode);
-
-    FILE *file = fopen(filename, mode);
-    if (file == NULL) {
-        perror("fopen() failed");
-        return NULL;
-    }
-
-    return file;
-}
-
-PossibleErrors CloseFile(FILE *file) {
-    assert(file);
-
-    int status = fclose(file);
-    if (status != 0) {
-        perror("fclose() failed");
-        return kErrorClosing;
-    }
-
-    return kNoError;
-}
+#include "/Users/zarinasharipova/Calculator/StructsEnums.h"
 
 size_t SizeOfFile(const char *filename) {
     assert(filename);
@@ -46,8 +21,7 @@ size_t SizeOfFile(const char *filename) {
     return (size_t)stbuf.st_size;
 }
 
-char *ReadToBuf(const char *filename, FILE *file, size_t filesize) {
-    assert(filename);
+char *ReadToBuf(FILE *file, size_t filesize) {
     assert(file);
 
     char *buf_in = (char *) calloc (filesize + 2, sizeof(char));
@@ -122,18 +96,18 @@ void ParseBuf(FileInfo *file_info) {
 
 void PrintError(PossibleErrors err_type) {
     switch (err_type) {
-    case (kNoError):
+    case (kNoErrorA):
         break;
     
-    case (kErrorOpening):
+    case (kErrorOpeningA):
         fprintf(stderr, "Error while opening file.");
         break;
 
-    case (kErrorClosing):
+    case (kErrorClosingA):
         fprintf(stderr, "Error while closing file.");
         break;
 
-    case (kErrorParsing):
+    case (kErrorParsingA):
         fprintf(stderr, "Error while parsing file.");
         break;
 
