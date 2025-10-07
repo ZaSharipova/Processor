@@ -4,13 +4,14 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../Calculator/StructsEnums.h"
-#include "../Processor/Assembler/FileOperations.h"
+#include "StructsEnums.h"
+#include "/Users/zarinasharipova/Assembler/FileOperations.h"
 
 static ParseErr_t OpenFileOrDefault(const char *filename, const char *mode, FILE **file_ptr, FILE *default_file);
 
 ParseErr_t ParseCommandLine(const char **argv, int argc, Files *in_out_files) {
     assert(argv);
+    assert(in_out_files);
 
     int pos = 1;
 
@@ -47,9 +48,23 @@ ParseErr_t HandleOpenFile(Files *in_out_files) {
     assert(in_out_files);
 
     ParseErr_t read_write_error = kNoError; 
-    CALL_CHECK_IN_OUT_RETURN(OpenFileOrDefault(in_out_files->log_file, WRITE_MODE, &in_out_files->open_log_file, stdout));
-    CALL_CHECK_IN_OUT_RETURN(OpenFileOrDefault(in_out_files->in_file, READ_MODE, &in_out_files->open_in_file, stdin));
-    CALL_CHECK_IN_OUT_RETURN(OpenFileOrDefault(in_out_files->out_file, WRITE_MODE, &in_out_files->open_out_file, stdout));
+    read_write_error = (OpenFileOrDefault(in_out_files->log_file, WRITE_MODE, &in_out_files->open_log_file, stdout));
+    if (read_write_error != kNoError) {
+        return read_write_error;
+    }
+
+    read_write_error = (OpenFileOrDefault(in_out_files->in_file, READ_MODE, &in_out_files->open_in_file, stdin));
+    if (read_write_error != kNoError) {
+        read_write_error = CloseFile(in_out_files->open_log_file);
+        return read_write_error;
+    }
+
+    read_write_error = OpenFileOrDefault(in_out_files->out_file, WRITE_MODE, &in_out_files->open_out_file, stdout);
+    if (read_write_error != kNoError) {
+        CALL_CHECK_IN_OUT_RETURN(CloseFile(in_out_files->open_in_file));
+        CALL_CHECK_IN_OUT_RETURN(CloseFile(in_out_files->open_out_file));
+        return read_write_error;
+    }
 
     return kNoError;
 }

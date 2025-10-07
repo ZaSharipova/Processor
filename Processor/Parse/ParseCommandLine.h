@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 
-#include "../Calculator/StructsEnums.h"
+#include "StructsEnums.h"
 
 #define LOG_MODE "--log"
 #define IN_MODE "--in"
@@ -11,7 +11,7 @@
 
 #define CALL_CHECK_IN_OUT_RETURN(call) \
     read_write_error = (call); \
-    if (read_write_error != 0) { \
+    if (read_write_error != kNoError) { \
         return read_write_error; \
     }
 
