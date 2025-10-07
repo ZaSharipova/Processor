@@ -7,21 +7,23 @@
 #include "StructsEnums.h"
 #include "CalculatorCommands.h"
 #include "StackFunctions.h"
+#include "ProcessorFunctions.h"
+#include "/Users/zarinasharipova/Assembler/AssemblerEnums.h"
 
-Stack_t Read(FILE *fin, Stack_t *code[]) {
+size_t Read(FILE *fin, Stack_t *code[]) {
     assert(fin);
     assert(code);
 
     Stack_t cmd = -1;
     int pos = 0;
-    Stack_t code_size = 0;
+    size_t code_size = 0;
 
-    fscanf(fin, "%d", &code_size);
+    fscanf(fin, "%zd", &code_size);
     *code = (Stack_t *) calloc ((size_t)code_size, sizeof(Stack_t));
 
-    while (pos < code_size && fscanf(fin, "%d", &cmd) == 1) {
+    while (pos < (int)code_size && fscanf(fin, "%d", &cmd) == 1) {
         (*code)[pos] = cmd;
-        pos ++;
+        pos++;
     }
 
     return code_size;
@@ -31,6 +33,9 @@ int Calculate(FILE *fout, Processor *processor_info, int code_size, FILE *open_l
     assert(fout);
     assert(processor_info);
     assert(open_log_file);
+
+    ProcessorErr_t err = kSuccess;
+    CHECK_STACK_RETURN(ProcessorVerify(processor_info, open_log_file));
 
     Stack_t number = 0;
     int cmd = -1;
@@ -160,5 +165,6 @@ int Calculate(FILE *fout, Processor *processor_info, int code_size, FILE *open_l
                 return -1;
         }
     }
-    return 1;
+
+    return ProcessorVerify(processor_info, open_log_file);
 }

@@ -34,7 +34,7 @@ void InitCanaries(void) {
     canary_right = InitCanary();
 }
 
-StackErr_t MakeCanary(Stack_Info *stk, FILE *open_log_file) {
+ProcessorErr_t MakeCanary(Stack_Info *stk, FILE *open_log_file) {
     assert(stk);
     assert(open_log_file);
 

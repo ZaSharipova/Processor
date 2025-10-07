@@ -8,7 +8,6 @@ typedef int Stack_t;
 #define MY_SPEC "%d"
 const Stack_t POISON = 1e6;
 
-
 #define READ_MODE "r"
 #define WRITE_MODE "w"
 
@@ -20,8 +19,8 @@ enum ParseErr_t {
     kErrorClosing = -4,
 };
 
-enum StackErr_t {
-    kProcessorNullPointer  = 1 < 0,
+enum ProcessorErr_t {
+    kProcessorNullPointer  = 1 << 0,
     kErrorEmptyStack       = 1 << 1,
     kErrorStackNullPointer = 1 << 2,
     kSizeError             = 1 << 3,
@@ -48,18 +47,11 @@ enum PossibleErrors {
     kErrorParsingA,  
 };
 
-
 enum NumOfArgs {
     kNo = -1,
     kZero = 0,
     kOne = 1,
 };
-
-// typedef struct {
-//     char cmd[16];
-//     int  arg;
-//     int  has_arg;
-// } Instruction;
 
 struct Source_Location_Info {
     const char *file_name;
@@ -103,39 +95,11 @@ struct Files {
     FILE *open_out_file;
 };
 
-#define PUSH "PUSH"
-#define POP "POP"
-#define ADD "ADD"
-#define SUB "SUB"
-#define MUL "MUL"
-#define DIV "DIV"
-#define SQRT "SQRT"
-#define OUT "OUT"
-#define PUSHR "PUSHR"
-#define POPR "POPR"
-#define IN "IN"
-#define HLT "HLT"
-
-enum Convert {
-    kPush  = 1,
-    kPop   = 2,
-    kAdd   = 3,
-    kSub   = 4,
-    kMul   = 5,
-    kDiv   = 6,
-    kSqrt  = 7,
-    kOut   = 8,
-    kPushR = 9,
-    kPopR  = 10,
-    kIn    = 11,
-    kHlt   = 0,
-};
-
 // typedef enum {
 //     kSuccess,
 //     kErrorOpening,
 //     kErrorUnknown
-// } StackErr_t;
+// } ProcessorErr_t;
 
 typedef struct {
     char *start_ptr;
@@ -154,11 +118,17 @@ typedef struct {
     int instruction_counter;
 } FileInfo;
 
-enum Realloc_Mode {
+enum ReallocMode {
     kIncrease,
     kDecrease,
     kNoChange,
     kIncreaseZero,
 };
+
+#define CHECK_ERROR_AND_CLOSE_FILE_RETURN(call) \
+    err = (call); \
+    if (err != kNoError) { \
+        return HandleCloseFile(in_out_files); \
+    }
 
 #endif //STRUCTS_ENUMS_H_

@@ -15,8 +15,10 @@
             .stack.create_var_info.var = #name, .stack.create_var_info.line = __LINE__} 
 #endif
 
+ProcessorErr_t ProcessorCtor(Processor *processor_info, ssize_t capacity, FILE *open_log_file);
+ProcessorErr_t ProcessorVerify(Processor *processor_info, FILE *open_log_file);
 void ProcessorDump(FILE *open_log_file, Processor *processor_info, const char *func_name, int line, const char *file_from, const char *processor_name);
-StackErr_t ProcessorDtor(FILE *open_log_file, Processor *processor_info);
+ProcessorErr_t ProcessorDtor(FILE *open_log_file, Processor *processor_info);
 
 #define PROCESSORDUMP(open_log_file, processor_name) ProcessorDump(open_log_file, *processor_name, __func__, __LINE__, __FILE__, #processor_name)
 #endif //PROCESSOR_FUNCTIONS_H_
