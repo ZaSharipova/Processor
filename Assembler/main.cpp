@@ -17,8 +17,11 @@ int main(int argc, const char *argv[]) {
 
     FileInfo file_info = {};
 
-    return HandleAsm(argv, &file_info, in_out_files);
+    err = HandleAsm(&file_info, in_out_files);
+    if (err < 0) {
+        return err;
+    }
 
     CALL_CHECK_IN_OUT_RETURN(HandleCloseFile(in_out_files));
-    return 0;
+    return kNoError;
 }

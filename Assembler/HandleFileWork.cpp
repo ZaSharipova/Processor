@@ -13,7 +13,7 @@
 #include "../Calculator/Parse/ParseCommandLine.h"
 #include "AssemblerEnums.h"
 
-PossibleErrors HandleBufRead(Files in_out_files, FileInfo *file_info) {
+PossibleErrorsAsm HandleBufRead(Files in_out_files, FileInfo *file_info) {
     assert(file_info);
 
     file_info->filesize = SizeOfFile(in_out_files.in_file);
@@ -26,7 +26,7 @@ PossibleErrors HandleBufRead(Files in_out_files, FileInfo *file_info) {
 
     ParseBuf(file_info);
 
-    return kNoErrorA;
+    return kNoErrorAsm;
 }
 
 int CommandToEnum(const char *command) {
@@ -102,10 +102,18 @@ int HandleParse(const char *line, FileInfo *file_info, int **buf_out, int *num_a
     }
 
     char *command = (char *) calloc (16, sizeof(char));
+    if (command == NULL) {
+        return kNoMemory;
+    }
     char *arg_str = (char *) calloc (64, sizeof(char));
+    if (arg_str == NULL) {
+        free(command);
+        return kNoMemory;
+    }
 
     int args_count = sscanf(line_ptr, "%15s %63s", command, arg_str);
 
+    printf("%s %s\n", command, arg_str);
     NumOfArgs has_arg = (args_count == 2) ? kOne : kZero;
     if (args_count != 1 && args_count != 2) {
         free(command);
@@ -163,16 +171,16 @@ void HandleWriteCommands(FILE *output, FileInfo *file_info, int *buf_out) {
 int HandleAsm(FileInfo *file_info, Files in_out_files) {
     assert(file_info);
 
-    PossibleErrors err = HandleBufRead(in_out_files, file_info);
-    if (err != kNoErrorA) {
-        return err;
-    }
+    PossibleErrorsAsm err = kNoErrorAsm;
+    ERROR_CHECK_RETURN(HandleBufRead(in_out_files, file_info));
 
     int *buf_out = (int *) calloc ((size_t)file_info->instruction_counter, sizeof(int));
+    if (buf_out == NULL) {
+        return kNoMemory;
+    }
 
     for (int i = 0; i < file_info->count_lines; i++) {
         LineInfo *line = &file_info->text_ptr[i];
-        size_t len = line->size + 1;
         
         int args_check = 0;
         int handle_error = HandleParse(line->start_ptr, file_info, &buf_out, &args_check);
@@ -190,5 +198,5 @@ int HandleAsm(FileInfo *file_info, Files in_out_files) {
     free(file_info->buf_ptr);
     free(file_info->text_ptr);
 
-    return 0;
+    return kNoError;
 }

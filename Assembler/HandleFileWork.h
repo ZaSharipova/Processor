@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 
+#include "AssemblerEnums.h"
 #include "../Calculator/StructsEnums.h"
 
 #define CHECK_ERROR_RETURN(call, err) \
@@ -12,7 +13,7 @@
         return err; \
     }
 
-PossibleErrors HandleBufRead(Files *in_out_files, FileInfo *file_info);
+PossibleErrorsAsm HandleBufRead(Files *in_out_files, FileInfo *file_info);
 void WriteCommand(FILE *output, int command, int has_arg, int arg);
 int HandleParse(const char *line, FileInfo *file_info, int **buf_out, int *num_args);
 int HandleAsm(FileInfo *file_info, Files in_out_files);

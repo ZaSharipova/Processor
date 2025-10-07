@@ -7,7 +7,7 @@
 #include <assert.h>
 #include <sys/stat.h>
 
-#include "../Calculator/StructsEnums.h"
+#include "AssemblerEnums.h"
 
 size_t SizeOfFile(const char *filename) {
     assert(filename);
@@ -83,31 +83,36 @@ void ParseBuf(FileInfo *file_info) {
 
         if (end_of_line) {
             long line_len = &(file_info->buf_ptr[i]) - line_start;
-            if (!IsBlankLine(line_start, (size_t)line_len)) {
+            if (line_len > 0 && !IsBlankLine(line_start, (size_t)line_len)) {
                 file_info->text_ptr[line_idx].start_ptr = line_start;
                 file_info->text_ptr[line_idx].end_ptr = &(file_info->buf_ptr[i - 1]);
                 file_info->text_ptr[line_idx].size = (size_t)(&(file_info->buf_ptr[i - 1]) - line_start) + 1;
+
+                if (!end_of_buffer) {
+                    file_info->buf_ptr[i] = '\0';
+                }
                 line_idx++;
             }
             line_start = &(file_info->buf_ptr[i + 1]);
         }
     }
+    file_info->count_lines = (int)line_idx;
 }
 
-void PrintError(PossibleErrors err_type) {
+void PrintError(PossibleErrorsAsm err_type) {
     switch (err_type) {
-    case (kNoErrorA):
+    case (kNoErrorAsm):
         break;
     
-    case (kErrorOpeningA):
+    case (kErrorOpeningAsm):
         fprintf(stderr, "Error while opening file.");
         break;
 
-    case (kErrorClosingA):
+    case (kErrorClosingAsm):
         fprintf(stderr, "Error while closing file.");
         break;
 
-    case (kErrorParsingA):
+    case (kErrorParsingAsm):
         fprintf(stderr, "Error while parsing file.");
         break;
 

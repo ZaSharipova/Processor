@@ -1,6 +1,7 @@
 #ifndef FILE_OPERATIONS_H_
 #define FILE_OPERATIONS_H_
 
+#include "AssemblerEnums.h"
 #include "../Calculator/StructsEnums.h"
 
 size_t SizeOfFile(const char *filename);
@@ -9,6 +10,6 @@ int IsBlankLine(const char *start, size_t len);
 int CountLines(const char *buf);
 void ParseBuf(FileInfo *file_info);
 
-void PrintError(PossibleErrors err_type);
+void PrintError(PossibleErrorsAsm err_type);
 
 #endif //FILE_OPERATIONS_H_
