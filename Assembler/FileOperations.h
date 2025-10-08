@@ -2,7 +2,7 @@
 #define FILE_OPERATIONS_H_
 
 #include "AssemblerEnums.h"
-#include "../Calculator/StructsEnums.h"
+#include "/Users/zarinasharipova/Calculator/StructsEnums.h"
 
 size_t SizeOfFile(const char *filename);
 char *ReadToBuf(FILE *file, size_t filesize);

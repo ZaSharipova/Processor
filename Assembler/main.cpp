@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "../Calculator/StructsEnums.h"
-#include "../Assembler/HandleFileWork.h"
-#include "../Calculator/Parse/ParseCommandLine.h"
+#include "/Users/zarinasharipova/Calculator/StructsEnums.h"
+#include "/Users/zarinasharipova/Assembler/HandleFileWork.h"
+#include "/Users/zarinasharipova/Calculator/Parse/ParseCommandLine.h"
 
 int main(int argc, const char *argv[]) {
     Files in_out_files = {NULL, NULL, NULL, NULL};

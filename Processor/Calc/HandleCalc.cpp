@@ -10,20 +10,40 @@
 #include "ProcessorFunctions.h"
 #include "/Users/zarinasharipova/Assembler/AssemblerEnums.h"
 
-size_t Read(FILE *fin, Stack_t *code[]) {
+#define JB_SIGN <
+#define JBE_SIGN <=
+#define JA_SIGN >
+#define JAE_SIGN >=
+#define JE_SIGN ==
+#define JNE_SIGN !=
+
+#define DO_JUMP_COMPARE(mode) \
+    CHECK_STACK_RETURN(StackPop(&processor_info->stack, &number2, open_log_file)); \
+    CHECK_STACK_RETURN(StackPop(&processor_info->stack, &number1, open_log_file)); \
+    if (number1 mode number2) { \
+        pointer = processor_info->code[pointer + 1]; \
+    } else { \
+        pointer += 2; \
+    } \
+    getchar(); \
+    break; \
+
+size_t Read(FILE *fin, int *instruction_counter, Stack_t *code[]) {
     assert(fin);
     assert(code);
 
     Stack_t cmd = -1;
-    int pos = 0;
+    int pointer = 0;
     size_t code_size = 0;
 
     fscanf(fin, "%zd", &code_size);
+    *instruction_counter = (int)code_size;
+
     *code = (Stack_t *) calloc ((size_t)code_size, sizeof(Stack_t));
 
-    while (pos < (int)code_size && fscanf(fin, "%d", &cmd) == 1) {
-        (*code)[pos] = cmd;
-        pos++;
+    while (pointer < (int)code_size && fscanf(fin, "%d", &cmd) == 1) {
+        (*code)[pointer] = cmd;
+        pointer++;
     }
 
     return code_size;
@@ -37,125 +57,80 @@ int Calculate(FILE *fout, Processor *processor_info, int code_size, FILE *open_l
     ProcessorErr_t err = kSuccess;
     CHECK_STACK_RETURN(ProcessorVerify(processor_info, open_log_file));
 
-    Stack_t number = 0;
+    Stack_t number1 = 0, number2 = 0;
+    Stack_t number_pop = 0;
     int cmd = -1;
-    Stack_t arg = 0;
-    Stack_t pos = 0;
+    Stack_t pointer = 0;
 
-    while (pos < code_size && cmd != kHlt) {
-        for (int i = 0; i < processor_info->stack.size; i++) {
-            printf("%d ", processor_info->stack.data[i]);
-        }
-        printf("\n");
-        cmd = processor_info->code[pos];
-
+    while (pointer < code_size && cmd != kHlt) {
+        cmd = processor_info->code[pointer];
+        // printf("%d - ", cmd);
+        // for (int i = 0; i < processor_info->stack.size; i++) {
+        //     printf("%d. ", processor_info->stack.data[i]);
+        // }
+        // printf("\n");
         switch (cmd) {
             case (kPush):
-                if (pos + 1 < code_size) {
-                    arg = processor_info->code[pos + 1];
-                    pos += 2; 
-                    if (Push_C(&processor_info->stack, arg, open_log_file) != kSuccess) {
-                        fprintf(stderr, "Error: PUSH failed.\n");
-                        return -1;
-                    }
-
-                } else {
-                    fprintf(stderr, "Error: Push without argument.\n");
-                    return -1;
-                }
+                CHECK_ERROR_RETURN(Push_C(processor_info, &pointer, open_log_file));
                 break;
 
             case (kPop):
-                pos++;
-                if (Pop_C(&processor_info->stack, open_log_file) != kSuccess) {
-                    fprintf(stderr, "Error: POP failed.\n");
-                    return -1;
-                }
+                CHECK_ERROR_RETURN(Pop_C(&processor_info->stack, &pointer, &number_pop, open_log_file));
                 break;
 
             case (kAdd):
-                pos++;
-                if (StackOperation(&processor_info->stack, Add_C, open_log_file) != kSuccess) {
-                    fprintf(stderr, "Error: ADD failed.\n");
-                    return -1;
-                }
+                CHECK_ERROR_RETURN(StackOperation(&processor_info->stack, Add_C, &pointer, open_log_file));
                 break;
 
             case (kSub):
-                pos++;
-                if (StackOperation(&processor_info->stack, Sub_C, open_log_file) != kSuccess) {
-                    fprintf(stderr, "Error: SUB failed.\n");
-                    return -1;
-                }
-
+                CHECK_ERROR_RETURN(StackOperation(&processor_info->stack, Sub_C, &pointer, open_log_file));
                 break;
 
             case (kMul):
-                pos++;
-                if (StackOperation(&processor_info->stack, Mul_C, open_log_file) != kSuccess) {
-                    fprintf(stderr, "Error: MUL failed.\n");
-                    return -1;
-                }
-
+                CHECK_ERROR_RETURN(StackOperation(&processor_info->stack, Mul_C, &pointer,  open_log_file));
                 break;
 
             case (kDiv):
-                pos++;
-                if (Div_C(&processor_info->stack, open_log_file) != kSuccess) {
-                    fprintf(stderr, "Error: DIV failed.\n");
-                    return -1;
-                }
+                CHECK_ERROR_RETURN(Div_C(&processor_info->stack, &pointer, open_log_file));
                 break;
 
             case (kSqrt):
-                pos++;
-                if (Sqrt_C(&processor_info->stack, open_log_file) != kSuccess) {
-                    fprintf(stderr, "Error: SQRT failed.\n");
-                    return -1;
-                }
+                CHECK_ERROR_RETURN(Sqrt_C(&processor_info->stack, &pointer, open_log_file));
                 break;
 
             case (kOut):
-                pos++;
-                if (Out_C(&processor_info->stack, open_log_file, fout) != kSuccess) {
-                    fprintf(stderr, "Error: OUT failed.\n");
-                    return -1;
-                }
+                CHECK_ERROR_RETURN(Out_C(&processor_info->stack, &pointer, open_log_file, fout));
                 break;
 
             case (kPushR):
-                if (pos + 1 < code_size) {
-                    arg = processor_info->code[pos + 1];
-                    pos += 2; 
-                    if (PushR_C(processor_info, arg, open_log_file) != kSuccess) {
-                        fprintf(stderr, "Error: PUSH failed.\n");
-                        return -1;
-                    }
-                } else {
-                    fprintf(stderr, "Error: Push without argument.\n");
-                    return -1;
-                }
+                CHECK_ERROR_RETURN(PushR_C(processor_info, &pointer, open_log_file));
                 break;
 
             case (kPopR):
-                if (pos + 1 < code_size) {
-                    arg = processor_info->code[pos + 1];
-                    pos += 2;
-                    if (PopR_C(processor_info, arg, open_log_file) != kSuccess) {
-                        fprintf(stderr, "Error: POP failed.\n");
-                        return -1;
-                    }
-                } else {
-                    fprintf(stderr, "Error: Pop without argument.\n");
-                    return -1;
-                }
+                CHECK_ERROR_RETURN(PopR_C(processor_info, &pointer, open_log_file));
                 break;
 
             case (kIn):
-                pos++;
-                scanf("%d", &number);
-                StackPush(&processor_info->stack, number, open_log_file);
+                CHECK_ERROR_RETURN(In_C(processor_info, &pointer, open_log_file));
                 break;
+
+            case(kJmp):
+                pointer = processor_info->code[pointer + 1];
+                getchar();
+                break;
+
+            case(kJB):
+                DO_JUMP_COMPARE(JB_SIGN);
+            case(kJBE):
+                DO_JUMP_COMPARE(JBE_SIGN);
+            case(kJA):
+                DO_JUMP_COMPARE(JA_SIGN);
+            case(kJAE):
+                DO_JUMP_COMPARE(JAE_SIGN);
+            case(kJE):
+                DO_JUMP_COMPARE(JE_SIGN);
+            case(kJNE):
+                DO_JUMP_COMPARE(JNE_SIGN);
 
             case (kHlt):
                 break;

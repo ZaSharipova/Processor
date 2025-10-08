@@ -35,6 +35,7 @@ enum ProcessorErr_t {
     kZeroNumber            = 1 << 11,
     kNumberNotWritten      = 1 << 12,
     kNoCommandFound        = 1 << 13,
+    kNoArgumentWritten     = 1 << 14,
 
     kSuccess               = 0,
     kFailure               = -1,

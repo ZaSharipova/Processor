@@ -8,9 +8,9 @@
 #include <sys/stat.h>
 #include <errno.h>
 
-#include "../Calculator/StructsEnums.h"
+#include "/Users/zarinasharipova/Calculator/StructsEnums.h"
 #include "FileOperations.h"
-#include "../Calculator/Parse/ParseCommandLine.h"
+#include "/Users/zarinasharipova/Calculator/Parse/ParseCommandLine.h"
 #include "AssemblerEnums.h"
 
 PossibleErrorsAsm HandleBufRead(Files in_out_files, FileInfo *file_info) {

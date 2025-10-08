@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "AssemblerEnums.h"
-#include "../Calculator/StructsEnums.h"
+#include "/Users/zarinasharipova/Calculator/StructsEnums.h"
 
 #define CHECK_ERROR_RETURN(call, err) \
     if (err != kNoError) { \
