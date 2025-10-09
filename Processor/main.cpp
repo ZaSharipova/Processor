@@ -22,7 +22,9 @@ int main(int argc, const char *argv[]) {
 
     CHECK_ERROR_AND_CLOSE_FILE_RETURN((int)ProcessorCtor(&processor_info, 1, in_out_files.open_log_file));
 
-    size_t code_size = Read(in_out_files.open_in_file, &processor_info.instruction_counter, &processor_info.code);
+    size_t code_size = 0;
+    CHECK_ERROR_AND_CLOSE_FILE_RETURN(Read(in_out_files.open_in_file, &processor_info.code, &code_size));
+    processor_info.code_size = code_size; //
 
     Calculate(in_out_files.open_out_file, &processor_info, (int)code_size, in_out_files.open_log_file);
 

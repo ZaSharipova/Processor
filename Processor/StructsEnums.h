@@ -82,6 +82,7 @@ struct Stack_Info {
 
 struct Processor {
     Stack_t *code;
+    int code_size;
     int instruction_counter;
     Stack_Info stack;
     Stack_t regs[16];

@@ -37,6 +37,13 @@ enum PossibleErrorsAsm {
 #define POPR "POPR"
 #define IN "IN"
 #define HLT "HLT"
+#define JMP "JMP"
+#define JB "JB"
+#define JBE "JBE"
+#define JA "JA"
+#define JAE "JAE"
+#define JE "JE"
+#define JNE "JNE"
 
 enum Convert {
     kPush  = 1,
@@ -50,7 +57,15 @@ enum Convert {
     kPushR = 9,
     kPopR  = 10,
     kIn    = 11,
+    kJmp   = 12,
+    kJB    = 13,
+    kJBE   = 14,
+    kJA    = 15,
+    kJAE   = 16,
+    kJE    = 17,
+    kJNE   = 18,
     kHlt   = 0,
+
 };
 
 #endif //ASSEMBLER_ENUMS_H_

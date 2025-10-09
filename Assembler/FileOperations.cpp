@@ -77,27 +77,32 @@ void ParseBuf(FileInfo *file_info) {
         int end_of_buffer = (i == bufsize);
         int end_of_line = (c == '\n' || end_of_buffer);
 
-        while (isspace(*line_start)) {
-            line_start++;
-        }
-
         if (end_of_line) {
             long line_len = &(file_info->buf_ptr[i]) - line_start;
-            if (line_len > 0 && !IsBlankLine(line_start, (size_t)line_len)) {
-                file_info->text_ptr[line_idx].start_ptr = line_start;
-                file_info->text_ptr[line_idx].end_ptr = &(file_info->buf_ptr[i - 1]);
-                file_info->text_ptr[line_idx].size = (size_t)(&(file_info->buf_ptr[i - 1]) - line_start) + 1;
 
-                if (!end_of_buffer) {
-                    file_info->buf_ptr[i] = '\0';
+            if (line_len > 0) {
+                char *ptr = line_start;
+                while (isspace((unsigned char)*ptr)) ptr++;
+
+                if (*ptr != '\0') {
+                    file_info->text_ptr[line_idx].start_ptr = line_start;
+                    file_info->text_ptr[line_idx].end_ptr = &(file_info->buf_ptr[i - 1]);
+                    file_info->text_ptr[line_idx].size = (size_t)(&(file_info->buf_ptr[i - 1]) - line_start) + 1;
+                    line_idx++;
                 }
-                line_idx++;
             }
+
+            if (!end_of_buffer) {
+                file_info->buf_ptr[i] = '\0';
+            }
+
             line_start = &(file_info->buf_ptr[i + 1]);
         }
     }
+
     file_info->count_lines = (int)line_idx;
 }
+
 
 void PrintError(PossibleErrorsAsm err_type) {
     switch (err_type) {
