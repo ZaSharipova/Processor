@@ -23,7 +23,7 @@
         return err; \
     }
 
-#define STACKDUMP(open_log_file, stk_name, err) StackDump(open_log_file, *stk_name, __func__, __LINE__, __FILE__, err, #stk_name)
+#define STACKDUMP(stk_name, err) StackDump(*stk_name, __func__, __LINE__, __FILE__, err, #stk_name)
 
 #ifndef _DEBUG
     #define INIT_STACK(name) \
@@ -35,13 +35,13 @@
             .create_var_info.var = #name, .create_var_info.line = __LINE__} 
 #endif
 
-ProcessorErr_t StackCtor(Stack_Info *stk, ssize_t capacity, FILE *open_log_file);
-ProcessorErr_t StackPush(Stack_Info *stk, Stack_t value, FILE *open_log_file);
-ProcessorErr_t StackPop(Stack_Info *stk, Stack_t *value, FILE *open_log_file);
-ProcessorErr_t StackRealloc(Stack_Info *stk, FILE *open_log_file, ReallocMode realloc_type);
-ProcessorErr_t StackDtor(Stack_Info *stk, FILE *open_log_file);
-void StackDump(FILE *open_log_file, Stack_Info stk, const char *func_name, int line, const char *file_from, unsigned int error, const char *stk_name);
-ProcessorErr_t CheckError(Stack_Info *stk, FILE *open_log_file);
+ProcessorErr_t StackCtor(Stack_Info *stk, ssize_t capacity);
+ProcessorErr_t StackPush(Stack_Info *stk, Stack_t value);
+ProcessorErr_t StackPop(Stack_Info *stk, Stack_t *value);
+ProcessorErr_t StackRealloc(Stack_Info *stk, ReallocMode realloc_type);
+ProcessorErr_t StackDtor(Stack_Info *stk);
+void StackDump(Stack_Info stk, const char *func_name, int line, const char *file_from, unsigned int error, const char *stk_name);
+ProcessorErr_t CheckError(Stack_Info *stk);
 
 
 #endif //STACK_FUNCTIONS_H_

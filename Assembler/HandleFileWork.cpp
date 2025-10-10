@@ -8,12 +8,12 @@
 #include <sys/stat.h>
 #include <errno.h>
 
-#include "../Calculator/StructsEnums.h"
+#include "StructsEnums.h"
 #include "FileOperations.h"
-#include "../Calculator/Parse/ParseCommandLine.h"
+#include "ParseCommandLine.h"
 #include "AssemblerEnums.h"
 
-PossibleErrorsAsm HandleBufRead(Files in_out_files, FileInfo *file_info) {
+AsmError HandleBufRead(Files in_out_files, FileInfo *file_info) {
     assert(file_info);
 
     file_info->filesize = SizeOfFile(in_out_files.in_file);
@@ -26,7 +26,7 @@ PossibleErrorsAsm HandleBufRead(Files in_out_files, FileInfo *file_info) {
 
     ParseBuf(file_info);
 
-    return kNoErrorAsm;
+    return kNoAsmError;
 }
 
 int CommandToEnum(const char *command) {
@@ -54,23 +54,13 @@ int CommandToEnum(const char *command) {
     return -1; 
 }
 
-void WriteCommand(FILE *output, int command, int has_arg, int arg) {
-    assert(output);
-
-    if (has_arg) {
-        fprintf(output, "%d %d\n", command, arg);
-
-    } else {
-        fprintf(output, "%d\n", command);
-    }
-}
-
 static const char *SkipWhitespace(const char *str) {
     assert(str);
 
     while (isspace((unsigned char) *str)) {
         str++;
     }
+
     return str;
 }
 
@@ -80,7 +70,7 @@ static int StringToInt(char *arg_str) {
     return (int)(arg_str[1] - 'A');
 }
 
-static int ParseArgumentValue(char *arg_str, int *out_val, int *labels) {
+static AsmError ParseArgumentValue(char *arg_str, int *out_val, int *labels) {
     assert(arg_str);
     assert(out_val);
     assert(labels);
@@ -90,11 +80,11 @@ static int ParseArgumentValue(char *arg_str, int *out_val, int *labels) {
 
         int label_num = 0;
         if (sscanf(arg_str, "%d", &label_num) != 1) {
-            return -1;
+            return kErrorParsingAsm;
         }
 
         *out_val = labels[label_num];
-        return 0;
+        return kNoAsmError;
     }
 
     char *end_ptr = NULL;
@@ -102,11 +92,11 @@ static int ParseArgumentValue(char *arg_str, int *out_val, int *labels) {
     long val = strtol(arg_str, &end_ptr, 0);
     if (end_ptr != arg_str && *end_ptr == '\0' && errno == 0) {
         *out_val = (int)val;
-        return 0;
+        return kNoAsmError;
     }
 
     *out_val = StringToInt(arg_str);
-    return 0;
+    return kNoAsmError;
 }
 
 
@@ -163,7 +153,6 @@ int HandleParse(const char *line, FileInfo *file_info, int **buf_out, int *num_a
     int command_to_enum = CommandToEnum(command);
     if (command_to_enum == -1) {
         file_info->instruction_counter = (int)pos;
-        printf("%s", arg_str);
         return kNoAvailableCommand;
     }
 
@@ -191,6 +180,7 @@ void HandleWriteCommands(FILE *output, FileInfo *file_info, int *buf_out) {
     for (int i = 0; i < file_info->instruction_counter; i++) {
         fprintf(output, "%d ", buf_out[i]);
     }
+
 }
 
 
@@ -224,42 +214,7 @@ int HandleAsm(FileInfo *file_info, Files in_out_files, int *labels) {
     return kNoError;
 }
 
-// int HandleAsm(FileInfo *file_info, Files in_out_files, int *labels) {
-//     assert(file_info);
-//     assert(labels);
-//     assert(labels);
-
-//     PossibleErrorsAsm err = kNoErrorAsm;
-//     ERROR_CHECK_RETURN(HandleBufRead(in_out_files, file_info));
-
-//     int *buf_out = (int *) calloc ((size_t)file_info->instruction_counter, sizeof(int));
-//     if (buf_out == NULL) {
-//         return kNoMemory;
-//     }
-
-//     for (int i = 0; i < file_info->count_lines; i++) {
-//         LineInfo *line = &file_info->text_ptr[i];
-        
-//         int args_check = 0;
-//         int handle_error = HandleParse(line->start_ptr, file_info, &buf_out, &args_check, labels);
-//         if (handle_error < 0) {
-//             free(buf_out);
-//             fprintf(stderr, "Parse error on line %d\n", i + 1);
-//             return handle_error;
-//         }
-
-//     }
-    
-//     HandleWriteCommands(in_out_files.open_out_file, file_info, buf_out);
-//     free(buf_out);
-
-//     free(file_info->buf_ptr);
-//     free(file_info->text_ptr);
-
-//     return kNoError;
-// }
-
-PossibleErrorsAsm HandlePreAssemble(Files files, FileInfo *file_info, int *labels) {
+AsmError HandlePreAssemble(Files files, FileInfo *file_info, int *labels) {
     assert(file_info);
     assert(labels);
 
@@ -270,17 +225,18 @@ PossibleErrorsAsm HandlePreAssemble(Files files, FileInfo *file_info, int *label
     file_info->count_lines = CountLines(file_info->buf_ptr);
     file_info->text_ptr = (LineInfo *) calloc((size_t)file_info->count_lines + 1, sizeof(LineInfo));
     assert(file_info->text_ptr != NULL);
+    
     ParseBuf(file_info);
 
     AsmError err = PreAssemble(file_info, labels);
     if (err != kNoAsmError) {
-        return (PossibleErrorsAsm) err;
+        return err;
     }
     // for (int i = 0; i < 10; i++) {
     //     printf("%d ", labels[i]);
     // }
     // printf("\n\n");
-    return kNoErrorAsm;
+    return kNoAsmError;
 }
 
 AsmError PreAssemble(FileInfo *file_info, int *labels) {
@@ -302,6 +258,7 @@ AsmError PreAssemble(FileInfo *file_info, int *labels) {
                 //printf("%d LABEL_NUM", label_num);
                 labels[label_num] = current_address;
                 *line->start_ptr = '\0';
+
             } else {
                 printf("error parsing METKI in command %d", current_address);
                 return kNoAvailableValue;
@@ -343,79 +300,3 @@ AsmError PreAssemble(FileInfo *file_info, int *labels) {
     
     return kNoAsmError;
 }
-
-// AsmError PreAssemble(char *buf_in, int *labels) {
-//     assert(buf_in);
-//     assert(labels);
-
-//     int current_address = 0;
-//     char *ptr = buf_in;
-//     char *line_start = ptr;
-//     int flag_change_current_address = 1;
-
-//     while (*ptr != '\0') {
-//         flag_change_current_address = 1;
-//         while (*ptr && isspace((unsigned char)*ptr)) {
-//             ptr++;
-//             line_start = ptr;
-//             flag_change_current_address = 0;
-//         }
-//         //if (*ptr == '\0') break;
-
-//         if (*ptr == ';') {
-//             while (*ptr && *ptr != '\n') ptr++;
-//             if (*ptr == '\n') {
-//                 ptr++;
-//                 line_start = ptr;
-//             }
-//             flag_change_current_address = 0;
-//         }
-
-//         char *line_end = ptr;
-//         while (*line_end && *line_end != '\n') {
-//             line_end++; // находим указатель на конец строки
-//         }
-
-//         if (*ptr == ':') {
-//             int label_num = 0;
-//             if (sscanf(ptr + 1, "%d", &label_num) == 1) {
-//                 if (line_start[0] == ':') {
-//                     labels[label_num] = current_address;
-//                     flag_change_current_address = 0;
-//                 } else {
-//                     current_address++;
-//                     flag_change_current_address = 0;
-//                 }
-//             } else {
-//                 printf("Syntax error!!!!\n");
-//                 flag_change_current_address = 0;
-//                 //return
-//             }
-
-//             ptr = line_end;
-//             if (*ptr == '\n') {
-//                 ptr++;
-//                 line_start = ptr;
-//             }
-//             //continue;
-//         }
-
-//         if (flag_change_current_address == 1) {
-//             current_address += 2;
-//         }
-
-//         ptr = line_end;
-//         if (*ptr == '\n') {
-//             ptr++;
-//             line_start = ptr;
-//         }
-//         printf("%d ", current_address);
-//     }
-
-//     for (int i = 0; i < 10; i++) {
-//         printf("%d ", labels[i]);
-//     }
-//     printf("\n\n");
-
-//     return 0;
-// }

@@ -8,34 +8,44 @@ typedef int Stack_t;
 #define MY_SPEC "%d"
 const Stack_t POISON = 1e6;
 
-
 #define READ_MODE "r"
 #define WRITE_MODE "w"
 
-enum StackErr_t {
-    kErrorEmptyStack       = 1 << 0,
-    kErrorStackNullPointer = 1 << 1,
-    kSizeError             = 1 << 2,
-    kNegativeCapacity      = 1 << 3,
-    kNegativeSize          = 1 << 4,
-    kWrongCanaryLeft       = 1 << 5,
-    kWrongCanaryRight      = 1 << 6,
-    kWrongHash             = 1 << 7,
-    kNoCallocMemory        = 1 << 8,
+enum ParseErr_t {
+    kNoError      = 0,
+    kErrorParsing = -1,
+    kWrongMode    = -2,
+    kErrorOpening = -3,
+    kErrorClosing = -4,
+};
 
-    kNoMemory              = 1 << 9,
-    kZeroNumber            = 1 << 10,
-    kNumberNotWritten      = 1 << 11,
-    kNoCommandFound        = 1 << 12,
+enum ProcessorErr_t {
+    kProcessorNullPointer  = 1 << 0,
+    kErrorEmptyStack       = 1 << 1,
+    kErrorStackNullPointer = 1 << 2,
+    kSizeError             = 1 << 3,
+    kNegativeCapacity      = 1 << 4,
+    kNegativeSize          = 1 << 5,
+    kWrongCanaryLeft       = 1 << 6,
+    kWrongCanaryRight      = 1 << 7,
+    kWrongHash             = 1 << 8,
+    kNoCallocMemory        = 1 << 9,
+
+    kNoMemory              = 1 << 10,
+    kZeroNumber            = 1 << 11,
+    kNumberNotWritten      = 1 << 12,
+    kNoCommandFound        = 1 << 13,
+    kNoArgumentWritten     = 1 << 14,
 
     kSuccess               = 0,
+    kFailure               = -1,
 };
 
 enum PossibleErrors {
-    kNoError,
-    kErrorOpening,
-    kErrorClosing,
-    kErrorParsing,  
+    kNoErrorA,
+    kErrorOpeningA,
+    kErrorClosingA,
+    kErrorParsingA,  
 };
 
 enum NumOfArgs {
@@ -43,12 +53,6 @@ enum NumOfArgs {
     kZero = 0,
     kOne = 1,
 };
-
-// typedef struct {
-//     char cmd[16];
-//     int  arg;
-//     int  has_arg;
-// } Instruction;
 
 struct Source_Location_Info {
     const char *file_name;
@@ -63,7 +67,6 @@ struct Stack_Info {
     ssize_t capacity;
 
 #ifdef _DEBUG
-    Stack_t *real_data;
     Source_Location_Info create_var_info;
 #endif
 
@@ -79,46 +82,26 @@ struct Stack_Info {
 
 struct Processor {
     Stack_t *code;
+    int code_size;
     int instruction_counter;
     Stack_Info stack;
+    Stack_t regs[16];
 };
 
 struct Files {
     const char *log_file;
-    FILE *open_log_file;
+    // FILE *open_log_file;
     const char *in_file;
     FILE *open_in_file;
     const char *out_file;
     FILE *open_out_file;
 };
 
-#define PUSH "PUSH"
-#define POP "POP"
-#define ADD "ADD"
-#define SUB "SUB"
-#define MUL "MUL"
-#define DIV "DIV"
-#define SQRT "SQRT"
-#define OUT "OUT"
-#define HLT "HLT"
-
-enum Convert {
-    Push = 1,
-    Pop = 2,
-    Add = 3,
-    Sub = 4,
-    Mul = 5,
-    Div = 6,
-    Sqrt = 7,
-    Out = 8,
-    Hlt = 0,
-};
-
 // typedef enum {
 //     kSuccess,
 //     kErrorOpening,
 //     kErrorUnknown
-// } StackErr_t;
+// } ProcessorErr_t;
 
 typedef struct {
     char *start_ptr;
@@ -134,13 +117,20 @@ typedef struct {
     size_t filesize;    
     int count_lines;    
     LineInfo *text_ptr; 
+    int instruction_counter;
 } FileInfo;
 
-enum Realloc_Mode {
+enum ReallocMode {
     kIncrease,
     kDecrease,
     kNoChange,
     kIncreaseZero,
 };
+
+#define CHECK_ERROR_AND_CLOSE_FILE_RETURN(call) \
+    err = (call); \
+    if (err != kNoError) { \
+        return HandleCloseFile(in_out_files); \
+    }
 
 #endif //STRUCTS_ENUMS_H_

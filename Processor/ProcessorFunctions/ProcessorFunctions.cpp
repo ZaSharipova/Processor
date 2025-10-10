@@ -5,37 +5,37 @@
 
 #include "StructsEnums.h"
 #include "StackFunctions.h"
+#include "HandleLogFile.h"
 
-ProcessorErr_t ProcessorCtor(Processor *processor_info, ssize_t capacity, FILE *open_log_file) {
+ProcessorErr_t ProcessorCtor(Processor *processor_info, ssize_t capacity) {
     assert(processor_info);
-    assert(open_log_file);
 
     processor_info->instruction_counter = 0;
 
-    return StackCtor(&processor_info->stack, capacity, open_log_file);
+    return StackCtor(&processor_info->stack, capacity);
 }
 
-ProcessorErr_t ProcessorVerify(Processor *processor_info, FILE *open_log_file) {
+ProcessorErr_t ProcessorVerify(Processor *processor_info) {
     assert(processor_info);
-    assert(open_log_file);
 
     unsigned int error = 0;
     if (processor_info == NULL) {
         error |= kProcessorNullPointer;
-        PROCESSORDUMP(open_log_file, &processor_info);
+        PROCESSORDUMP(&processor_info);
         return kProcessorNullPointer;
     }
 
-    error |= (unsigned int)CheckError(&(processor_info->stack), open_log_file);
+    error |= (unsigned int)CheckError(&(processor_info->stack));
     return (ProcessorErr_t)error;
 }
 
-void ProcessorDump(FILE *open_log_file, Processor *processor_info, const char *func_name, int line, const char *file_from, const char *processor_name) {
+void ProcessorDump(Processor *processor_info, const char *func_name, int line, const char *file_from, const char *processor_name) {
     assert(processor_info);
-    assert(open_log_file);
     assert(func_name);
     assert(file_from);
     assert(processor_name);
+
+    FILE *open_log_file = GetLogFile();
 
     fprintf(open_log_file, "%s%s%s ", RED(open_log_file), "Processor null pointer.", RESET(open_log_file));
     fprintf(open_log_file, "\nfrom %s, function %s: line %d\n", file_from, func_name, line);
@@ -43,14 +43,13 @@ void ProcessorDump(FILE *open_log_file, Processor *processor_info, const char *f
     fprintf(open_log_file, "Processor name: %s\n", processor_name);
 }
 
-ProcessorErr_t ProcessorDtor(FILE *open_log_file, Processor *processor_info) {
+ProcessorErr_t ProcessorDtor(Processor *processor_info) {
     assert(processor_info);
-    assert(open_log_file);
 
     ProcessorErr_t err = kSuccess;
-    CHECK_ERROR_RETURN(ProcessorVerify(processor_info, open_log_file));
+    CHECK_ERROR_RETURN(ProcessorVerify(processor_info));
 
-    StackDtor(&processor_info->stack, open_log_file);
+    StackDtor(&processor_info->stack);
     processor_info = NULL;
 
     return kSuccess;

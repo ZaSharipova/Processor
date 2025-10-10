@@ -104,21 +104,40 @@ void ParseBuf(FileInfo *file_info) {
 }
 
 
-void PrintError(PossibleErrorsAsm err_type) {
+void PrintError(AsmError err_type) {
     switch (err_type) {
-    case (kNoErrorAsm):
+    case (kNoAsmError):
         break;
     
-    case (kErrorOpeningAsm):
+    case (kErrorOpeningFile):
         fprintf(stderr, "Error while opening file.");
         break;
 
-    case (kErrorClosingAsm):
+    case (kErrorClosingFile):
         fprintf(stderr, "Error while closing file.");
         break;
 
     case (kErrorParsingAsm):
         fprintf(stderr, "Error while parsing file.");
+        break;
+
+    case (kNoMemoryCalloc):
+        fprintf(stderr, "Error memory error in Calloc.");
+        break;
+
+    case (kNoAvailableValue):
+        fprintf(stderr, "No available value.");
+        break;
+
+    case (kNoAvailableCommand):
+        fprintf(stderr, "Not available command entered.");
+
+    case (kErrorZeroArgs):
+        fprintf(stderr, "No args beeing entered.");
+        break;
+
+    case (kWhitespace):
+        fprintf(stderr, "Empty line entered.");
         break;
 
     default:

@@ -6,6 +6,7 @@
 
 #include "StructsEnums.h"
 #include "/Users/zarinasharipova/Assembler/FileOperations.h"
+#include "HandleLogFile.h"
 
 static ParseErr_t OpenFileOrDefault(const char *filename, const char *mode, FILE **file_ptr, FILE *default_file);
 
@@ -48,14 +49,14 @@ ParseErr_t HandleOpenFile(Files *in_out_files) {
     assert(in_out_files);
 
     ParseErr_t read_write_error = kNoError; 
-    read_write_error = (OpenFileOrDefault(in_out_files->log_file, WRITE_MODE, &in_out_files->open_log_file, stdout));
-    if (read_write_error != kNoError) {
-        return read_write_error;
-    }
+    // read_write_error = (OpenFileOrDefault(in_out_files->log_file, WRITE_MODE, stdout));
+    // if (read_write_error != kNoError) {
+    //     return read_write_error;
+    // }
 
     read_write_error = (OpenFileOrDefault(in_out_files->in_file, READ_MODE, &in_out_files->open_in_file, stdin));
     if (read_write_error != kNoError) {
-        read_write_error = CloseFile(in_out_files->open_log_file);
+        //read_write_error = CloseFile(in_out_files->open_log_file);
         return read_write_error;
     }
 
@@ -73,7 +74,7 @@ ParseErr_t HandleCloseFile(Files in_out_files) {
     ParseErr_t read_write_error = kNoError;
 
     if (in_out_files.log_file != NULL) {
-        CALL_CHECK_IN_OUT_RETURN(CloseFile(in_out_files.open_log_file));
+        CALL_CHECK_IN_OUT_RETURN(CloseFile(GetLogFile()));
     }
 
     if (in_out_files.open_in_file != stdin) {

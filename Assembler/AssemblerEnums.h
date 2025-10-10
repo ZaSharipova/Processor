@@ -16,13 +16,7 @@ enum AsmError {
     kNoAvailableCommand = -5,
     kErrorZeroArgs      = -6,
     kWhitespace         = -7,
-};
-
-enum PossibleErrorsAsm {
-    kNoErrorAsm,
-    kErrorOpeningAsm,
-    kErrorClosingAsm,
-    kErrorParsingAsm,  
+    kErrorParsingAsm    = -8,
 };
 
 #define PUSH "PUSH"

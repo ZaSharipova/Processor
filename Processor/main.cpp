@@ -9,6 +9,7 @@
 #include "StackFunctions.h"
 #include "ProcessorFunctions.h"
 #include "ParseCommandLine.h"
+#include "HandleLogFile.h"
 
 int main(int argc, const char *argv[]) {
     Files in_out_files = {NULL, NULL, NULL, NULL};
@@ -16,19 +17,20 @@ int main(int argc, const char *argv[]) {
     int err = kSuccess;
 
     CALL_CHECK_IN_OUT_RETURN(ParseCommandLine(argv, argc, &in_out_files));
+    SetLogFile(in_out_files.log_file);
     CALL_CHECK_IN_OUT_RETURN(HandleOpenFile(&in_out_files));
 
     INIT_PROCESSOR_INFO(processor_info);
 
-    CHECK_ERROR_AND_CLOSE_FILE_RETURN((int)ProcessorCtor(&processor_info, 1, in_out_files.open_log_file));
+    CHECK_ERROR_AND_CLOSE_FILE_RETURN((int)ProcessorCtor(&processor_info, 1));
 
     size_t code_size = 0;
     CHECK_ERROR_AND_CLOSE_FILE_RETURN(Read(in_out_files.open_in_file, &processor_info.code, &code_size));
-    processor_info.code_size = code_size; //
+    processor_info.code_size = (int)code_size;
 
-    Calculate(in_out_files.open_out_file, &processor_info, (int)code_size, in_out_files.open_log_file);
+    Calculate(in_out_files.open_out_file, &processor_info, (int)code_size);
 
-    CHECK_ERROR_AND_CLOSE_FILE_RETURN((int)ProcessorDtor(in_out_files.open_log_file, &processor_info)); 
+    CHECK_ERROR_AND_CLOSE_FILE_RETURN((int)ProcessorDtor(&processor_info)); 
 
     return HandleCloseFile(in_out_files);
 }
