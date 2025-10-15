@@ -2,22 +2,26 @@
 
 #include <stdio.h>
 #include <assert.h>
-#include <string.h>
-#include <stdlib.h>
 
-#include "ParseCommandLine.h"
+#include "FileOperations.h"
+#include "StructsEnums.h"
 
-static char currentLogFile[256] = "";
-static FILE *file = NULL;
+static FILE *opened_file = NULL;
 
 void SetLogFile(const char *filename) {
     assert(filename);
 
-    snprintf(currentLogFile, sizeof(currentLogFile), "%s", filename);
-    file = OpenFile(currentLogFile, "w");
+    opened_file = OpenFile(filename, WRITE_MODE);
+    if (opened_file == NULL) {
+        printf("Error opening logfile, so all the mistakes will be seen in STDOUT.\n");
+        opened_file = stdout;
+    }
 }
 
 FILE *GetLogFile(void) {
-    return file;
+    return opened_file;
 }
 
+ParseErr_t CloseLogFile(void) { //
+    return CloseFile(opened_file);
+}

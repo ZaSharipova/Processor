@@ -9,30 +9,43 @@
 #include "Canary.h"
 #include "StructsEnums.h"
 #include "HandleLogFile.h"
+#include "CalculatorCommands.h"
 
 static ReallocMode CheckSize(ssize_t size, ssize_t *capacity);
 
-const char *GetErrorString[NUMBER_OF_ERRORS] = {
-    "Processor null pointer",
-    "Empty stack",
-    "Stack null pointer",
-    "Size error",
-    "Negative Capacity",
-    "Negative Size",
-    "Wrong canary left value",
-    "Wrong canary right value",
-    "Hash mismatch. Stack corrupted",
-    "No calloc memory",
-    "No memory available",
-    "Zero number beeing written",
-    "Number not written",
-    "Command not found",
+// const char *GetErrorString[] = {
+//     "Processor null pointer",
+//     "Empty stack",
+//     "Stack null pointer",
+//     "Size error",
+//     "Negative Capacity",
+//     "Negative Size",
+//     "Wrong canary left value",
+//     "Wrong canary right value",
+//     "Hash mismatch. Stack corrupted",
+//     "No calloc memory",
+//     "No memory available",
+//     "Zero number beeing written",
+//     "Number not written",
+//     "Command not found",
+// };
+
+const char *GetErrorString[] = {
+    [16] = "Stack: empty",
+    [17] = "Stack: null pointer",
+    [18] = "Stack: size error",
+    [19] = "Stack: negative capacity",
+    [20] = "Stack: negative size",
+    [21] = "Stack: wrong canary left",
+    [22] = "Stack: wrong canary right",
+    [23] = "Stack: hash mismatch",
+    [24] = "Stack: no alloc memory"
 };
 
-ProcessorErr_t StackCtor(Stack_Info *stk, ssize_t capacity) {
+StackErr_t StackCtor(Stack_Info *stk, ssize_t capacity) {
     assert(stk);
 
-    ProcessorErr_t err = kSuccess;
+    StackErr_t err = kStackSuccess;
 
     stk->capacity = capacity;
     if (capacity < 0) {
@@ -43,14 +56,14 @@ ProcessorErr_t StackCtor(Stack_Info *stk, ssize_t capacity) {
     stk->size = 0;
 
 #ifdef _CANARY
-    CHECK_ERROR_RETURN(MakeCanary(stk));
+    CHECK_STACK_RETURN(MakeCanary(stk));
 #endif
 
 #ifndef _CANARY
     stk->data = (Stack_t *) calloc ((size_t)capacity, sizeof(*stk->data));
     if (!stk->data) {
         STACKDUMP(stk, kNoMemory);
-        return kNoMemory;
+        return kNoAllocMemory;
     }
 #endif
 
@@ -58,19 +71,19 @@ ProcessorErr_t StackCtor(Stack_Info *stk, ssize_t capacity) {
     Update_Data_Hash(stk);
 #endif
 
-    CHECK_ERROR_RETURN(CheckError(stk));
-    return kSuccess;
+    CHECK_STACK_RETURN(CheckError(stk));
+    return kStackSuccess;
 }
 
-ProcessorErr_t StackPush(Stack_Info *stk, Stack_t value) {
+StackErr_t StackPush(Stack_Info *stk, Stack_t value) {
     assert(stk);
 
-    ProcessorErr_t err = kSuccess;
-    CHECK_ERROR_RETURN(CheckError(stk));
+    StackErr_t err = kStackSuccess;
+    CHECK_STACK_RETURN(CheckError(stk));
 
     ReallocMode realloc_type = CheckSize(stk->size, &stk->capacity);
     if (realloc_type != kNoChange) {
-        CHECK_ERROR_RETURN(StackRealloc(stk, realloc_type));
+        CHECK_STACK_RETURN(StackRealloc(stk, realloc_type));
     }
 
     stk->data[stk->size++] = value;
@@ -79,16 +92,16 @@ ProcessorErr_t StackPush(Stack_Info *stk, Stack_t value) {
     Update_Data_Hash(stk);
 #endif
 
-    CHECK_ERROR_RETURN(CheckError(stk));
-    return kSuccess;
+    CHECK_STACK_RETURN(CheckError(stk));
+    return kStackSuccess;
 }
 
-ProcessorErr_t StackPop(Stack_Info *stk, Stack_t *value) {
+StackErr_t StackPop(Stack_Info *stk, Stack_t *value) {
     assert(stk);
     assert(value);
 
-    ProcessorErr_t err = kSuccess;
-    CHECK_ERROR_RETURN(CheckError(stk));
+    StackErr_t err = kStackSuccess;
+    CHECK_STACK_RETURN(CheckError(stk));
 
     if (stk->size == 0) {
         STACKDUMP(stk, kErrorEmptyStack);
@@ -102,16 +115,16 @@ ProcessorErr_t StackPop(Stack_Info *stk, Stack_t *value) {
     Update_Data_Hash(stk);
 #endif
 
-    CHECK_ERROR_RETURN(CheckError(stk));
+    CHECK_STACK_RETURN(CheckError(stk));
 
     ReallocMode realloc_type = CheckSize(stk->size, &stk->capacity);
     if (realloc_type != kNoChange) {
-        CHECK_ERROR_RETURN(StackRealloc(stk, realloc_type));
+        CHECK_STACK_RETURN(StackRealloc(stk, realloc_type));
     }
 
-    CHECK_ERROR_RETURN(CheckError(stk));
+    CHECK_STACK_RETURN(CheckError(stk));
 
-    return kSuccess;
+    return kStackSuccess;
 }
 
 void FillPoison(Stack_Info *stk) {
@@ -124,11 +137,11 @@ void FillPoison(Stack_Info *stk) {
     }
 }
 
-ProcessorErr_t StackTop(Stack_Info stk, Stack_t *value) {
+StackErr_t StackTop(Stack_Info stk, Stack_t *value) {
     assert(value);
 
-    ProcessorErr_t err = kSuccess;
-    CHECK_ERROR_RETURN(CheckError(&stk));
+    StackErr_t err = kStackSuccess;
+    CHECK_STACK_RETURN(CheckError(&stk));
     
     if (stk.size == 0) {
         STACKDUMP(&stk, kErrorEmptyStack);
@@ -136,7 +149,7 @@ ProcessorErr_t StackTop(Stack_Info stk, Stack_t *value) {
     }
 
     *value = stk.data[stk.size - 1];
-    CHECK_ERROR_RETURN(CheckError(&stk));
+    CHECK_STACK_RETURN(CheckError(&stk));
     return err;
 }
 
@@ -157,7 +170,7 @@ static ReallocMode CheckSize(ssize_t size, ssize_t *capacity) {
     return kNoChange;
 }
 
-ProcessorErr_t StackRealloc(Stack_Info *stk, ReallocMode realloc_type) {
+StackErr_t StackRealloc(Stack_Info *stk, ReallocMode realloc_type) {
     assert(stk);
 
     if (realloc_type == kIncrease) {
@@ -179,7 +192,7 @@ ProcessorErr_t StackRealloc(Stack_Info *stk, ReallocMode realloc_type) {
     Stack_t *realloc_ptr = (Stack_t *) realloc (ptr, ((size_t)new_elems) * sizeof(*realloc_ptr));
     if (realloc_ptr == NULL) {
         STACKDUMP(stk, kNoMemory);
-        return kNoMemory;
+        return kNoAllocMemory;
     }
 
 #ifdef _CANARY
@@ -192,17 +205,17 @@ ProcessorErr_t StackRealloc(Stack_Info *stk, ReallocMode realloc_type) {
 
     FillPoison(stk);
     
-    ProcessorErr_t err = kSuccess;
-    CHECK_ERROR_RETURN(CheckError(stk));
+    StackErr_t err = kStackSuccess;
+    CHECK_STACK_RETURN(CheckError(stk));
 
     return err;
 }
 
-ProcessorErr_t StackDtor(Stack_Info *stk) {
+StackErr_t StackDtor(Stack_Info *stk) {
     assert(stk);
 
-    ProcessorErr_t err = kSuccess;
-    CHECK_ERROR_RETURN(CheckError(stk));
+    StackErr_t err = kStackSuccess;
+    CHECK_STACK_RETURN(CheckError(stk));
 
     stk->size = -1;
     stk->capacity = -1;
@@ -230,14 +243,16 @@ void StackDump(Stack_Info stk, const char *func_name, int line, const char *file
     assert(file_from);
     assert(stk_name);
 
-    unsigned int bit = 1;
+    // unsigned int bit = 1;
     FILE *open_log_file = GetLogFile();
+
     fprintf(open_log_file, "errors: ");
-    for (int i = 0; i < NUMBER_OF_ERRORS; i++) {
-        if (error & bit) {
+    for (int i = 16; i < NUMBER_OF_ERRORS; i++) {
+        unsigned int bit_mask = 1U << i; 
+        if (error & bit_mask) {
             fprintf(open_log_file, "%s%s%s ", RED(open_log_file), GetErrorString[i], RESET(open_log_file));
         }
-        bit <<= 1;
+        // bit <<= 1;
     }
 
     fprintf(open_log_file, "\nfrom %s, function %s: line %d\n", file_from, func_name, line);
@@ -256,12 +271,12 @@ void StackDump(Stack_Info stk, const char *func_name, int line, const char *file
 
     int pos = 0;
     while(pos < stk.size) {
-        fprintf(open_log_file, "  *[%d] = " MY_SPEC "\n", pos, stk.data[pos]);
+        fprintf(open_log_file, "  *[%d] = " STACK_VALUE_MODE "\n", pos, stk.data[pos]);
         pos++;
     }
 
     while (pos < stk.capacity) {
-        fprintf(open_log_file, "   [%d] " MY_SPEC " = POISON\n", pos, stk.data[pos]);
+        fprintf(open_log_file, "   [%d] " STACK_VALUE_MODE " = POISON\n", pos, stk.data[pos]);
         pos++;
     }
 
@@ -282,14 +297,14 @@ void StackDump(Stack_Info stk, const char *func_name, int line, const char *file
 
 }
 
-ProcessorErr_t CheckError(Stack_Info *stk) {
+StackErr_t CheckError(Stack_Info *stk) {
     assert(stk);
 
     unsigned int error = 0;
 
     if (stk == NULL) {
         error |= kErrorEmptyStack;
-        return (ProcessorErr_t)error;
+        return (StackErr_t)error;
     }
 
     if (stk->data == NULL) {
@@ -327,9 +342,9 @@ ProcessorErr_t CheckError(Stack_Info *stk) {
 
     if (error != 0) {
         STACKDUMP(stk, error);
-        return kFailure;
+        return kStackFailure;
     }
 
-    return kSuccess;
+    return kStackSuccess;
 
 }

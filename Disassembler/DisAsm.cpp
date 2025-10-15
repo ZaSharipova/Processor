@@ -8,10 +8,10 @@
 #include <sys/stat.h>
 #include <errno.h>
 
-#include "../Calculator/StructsEnums.h"
-#include "../Assembler/AssemblerEnums.h"
-#include "/Users/zarinasharipova/Assembler/HandleFileWork.h"
-#include "/Users/zarinasharipova/Assembler/FileOperations.h"
+#include "StructsEnums.h"
+#include "AssemblerEnums.h"
+#include "HandleFileWork.h"
+#include "FileOperations.h"
 
 // PossibleErrorsAsm HandleBufRead(Files in_out_files, FileInfo *file_info) {
 //     assert(file_info);

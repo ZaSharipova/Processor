@@ -7,13 +7,44 @@
 #include "StackFunctions.h"
 #include "HandleLogFile.h"
 
+ProcessorErr_t StackErrToProcessorErr(StackErr_t err) {
+    switch (err) {
+        case kStackSuccess: return kProcessorSuccess;
+        case kNoAllocMemory: return kNoMemory;
+        case kErrorEmptyStack:
+        case kErrorStackNullPointer: return kProcessorNullPointer;
+        case kStackFailure: return kProcessorFailure;
+        case kSizeError:
+        case kNegativeSize:
+        case kNegativeCapacity: 
+            return kZeroNumber;
+        case kWrongCanaryLeft:
+        case kWrongCanaryRight:
+        case kWrongHash: return kProcessorFailure;
+
+        default: return kProcessorFailure;
+    }
+}
+
 ProcessorErr_t ProcessorCtor(Processor *processor_info, ssize_t capacity) {
     assert(processor_info);
 
     processor_info->instruction_counter = 0;
 
-    return StackCtor(&processor_info->stack, capacity);
+    StackCtor(&processor_info->call_array, capacity);
+    // processor_info->call_array = 
+
+    return (ProcessorErr_t)StackCtor(&processor_info->stack, capacity);
 }
+
+// const char *ProcessorErrorString[] = {
+//     "Processor: null pointer",
+//     "Processor: no memory",
+//     "Processor: zero number written",
+//     "Processor: number not written",
+//     "Processor: command not found",
+//     "Processor: argument not written"
+// };
 
 ProcessorErr_t ProcessorVerify(Processor *processor_info) {
     assert(processor_info);
@@ -46,11 +77,11 @@ void ProcessorDump(Processor *processor_info, const char *func_name, int line, c
 ProcessorErr_t ProcessorDtor(Processor *processor_info) {
     assert(processor_info);
 
-    ProcessorErr_t err = kSuccess;
+    ProcessorErr_t err = kProcessorSuccess;
     CHECK_ERROR_RETURN(ProcessorVerify(processor_info));
 
     StackDtor(&processor_info->stack);
     processor_info = NULL;
 
-    return kSuccess;
+    return kProcessorSuccess;
 }

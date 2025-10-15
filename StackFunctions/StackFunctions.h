@@ -12,7 +12,7 @@
 #define RED(stream)   (isatty(fileno(stream)) ? RED_COLOR : "")
 #define RESET(stream) (isatty(fileno(stream)) ? RESET_COLOR : "")
 
-#define NUMBER_OF_ERRORS 14
+#define NUMBER_OF_ERRORS 24
 #define POISON 1e6
 #define INCREASE_VALUE 2
 #define DECREASE_VALUE 4
@@ -35,13 +35,13 @@
             .create_var_info.var = #name, .create_var_info.line = __LINE__} 
 #endif
 
-ProcessorErr_t StackCtor(Stack_Info *stk, ssize_t capacity);
-ProcessorErr_t StackPush(Stack_Info *stk, Stack_t value);
-ProcessorErr_t StackPop(Stack_Info *stk, Stack_t *value);
-ProcessorErr_t StackRealloc(Stack_Info *stk, ReallocMode realloc_type);
-ProcessorErr_t StackDtor(Stack_Info *stk);
+StackErr_t StackCtor(Stack_Info *stk, ssize_t capacity);
+StackErr_t StackPush(Stack_Info *stk, Stack_t value);
+StackErr_t StackPop(Stack_Info *stk, Stack_t *value);
+StackErr_t StackRealloc(Stack_Info *stk, ReallocMode realloc_type);
+StackErr_t StackDtor(Stack_Info *stk);
 void StackDump(Stack_Info stk, const char *func_name, int line, const char *file_from, unsigned int error, const char *stk_name);
-ProcessorErr_t CheckError(Stack_Info *stk);
+StackErr_t CheckError(Stack_Info *stk);
 
 
 #endif //STACK_FUNCTIONS_H_

@@ -8,6 +8,12 @@
 #include <sys/stat.h>
 
 #include "AssemblerEnums.h"
+#include "StructsEnums.h"
+#include "FileOperations.h"
+#include "HandleLogFile.h"
+#include "ParseCommandLine.h" //
+
+static ParseErr_t OpenFileOrDefault(const char *filename, const char *mode, FILE **file_ptr, FILE *default_file);
 
 size_t SizeOfFile(const char *filename) {
     assert(filename);
@@ -84,6 +90,11 @@ void ParseBuf(FileInfo *file_info) {
                 char *ptr = line_start;
                 while (isspace((unsigned char)*ptr)) ptr++;
 
+                char *semicolon = strchr(ptr, ';');
+                if (semicolon) {
+                    *semicolon = '\0';
+                }
+
                 if (*ptr != '\0') {
                     file_info->text_ptr[line_idx].start_ptr = line_start;
                     file_info->text_ptr[line_idx].end_ptr = &(file_info->buf_ptr[i - 1]);
@@ -143,4 +154,90 @@ void PrintError(AsmError err_type) {
     default:
         fprintf(stderr, "Unlnown command.");
     }
+}
+
+ParseErr_t HandleOpenFile(Files *in_out_files) {
+    assert(in_out_files);
+
+    ParseErr_t read_write_error = kNoError; 
+    // read_write_error = (OpenFileOrDefault(in_out_files->log_file, WRITE_MODE, stdout));
+    // if (read_write_error != kNoError) {
+    //     return read_write_error;
+    // }
+
+    read_write_error = (OpenFileOrDefault(in_out_files->in_file, READ_MODE, &in_out_files->open_in_file, stdin));
+    if (read_write_error != kNoError) {
+        //read_write_error = CloseFile(in_out_files->open_log_file);
+        return read_write_error;
+    }
+
+    read_write_error = OpenFileOrDefault(in_out_files->out_file, WRITE_MODE, &in_out_files->open_out_file, stdout);
+    if (read_write_error != kNoError) {
+        CALL_CHECK_IN_OUT_RETURN(CloseFile(in_out_files->open_in_file));
+        CALL_CHECK_IN_OUT_RETURN(CloseFile(in_out_files->open_out_file));
+        return read_write_error;
+    }
+
+    return kNoError;
+}
+
+ParseErr_t HandleCloseFile(const Files *in_out_files) {
+    assert(in_out_files);
+
+    ParseErr_t read_write_error = kNoError;
+
+    // if (in_out_files.log_file != NULL) {
+    //     CALL_CHECK_IN_OUT_RETURN(CloseFile(GetLogFile()));
+    // }
+
+    if (in_out_files->open_in_file != stdin) {
+        CALL_CHECK_IN_OUT_RETURN(CloseFile(in_out_files->open_in_file));
+    }
+
+    if (in_out_files->open_out_file != stdout) {
+        CALL_CHECK_IN_OUT_RETURN(CloseFile(in_out_files->open_out_file));
+    }
+
+   return kNoError;
+}
+
+static ParseErr_t OpenFileOrDefault(const char *filename, const char *mode, FILE **file_ptr, FILE *default_file) {
+    assert(mode);
+    assert(file_ptr);
+    assert(default_file);
+
+    if (filename != NULL) {
+        *file_ptr = OpenFile(filename, mode);
+        if (*file_ptr == NULL) {
+            return kErrorOpening;
+        }
+    } else {
+        *file_ptr = default_file;
+    }
+    return kNoError;
+}
+
+FILE *OpenFile(const char *filename, const char *mode) {
+    assert(filename);
+    assert(mode);
+
+    FILE *file = fopen(filename, mode);
+    if (file == NULL) {
+        perror("fopen() failed");
+        return NULL;
+    }
+
+    return file;
+}
+
+ParseErr_t CloseFile(FILE *file) {
+    assert(file);
+
+    int status = fclose(file);
+    if (status != 0) {
+        perror("fclose() failed");
+        return kErrorClosing;
+    }
+
+    return kNoError;
 }

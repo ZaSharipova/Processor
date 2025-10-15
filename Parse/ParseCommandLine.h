@@ -17,10 +17,4 @@
 
 ParseErr_t ParseCommandLine(const char **argv, int argc, Files *in_out_files);
 
-ParseErr_t HandleOpenFile(Files *in_out_files);
-ParseErr_t HandleCloseFile(Files in_out_files);
-
-FILE *OpenFile(const char *filename, const char *mode);
-ParseErr_t CloseFile(FILE *file);
-
 #endif //PARSE_COMMAND_LINE_H_

@@ -6,6 +6,6 @@
 #include "StructsEnums.h"
 
 ProcessorErr_t Read(FILE *fin, Stack_t *code[], size_t *code_size);
-int Calculate(FILE *fout, Processor *processor_info, int code_size);
+int Calculate(FILE *fout, Processor *processor_info, size_t code_size);
 
 #endif //HANDLE_CALC_H_

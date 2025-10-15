@@ -15,6 +15,14 @@
             .stack.create_var_info.var = #name, .stack.create_var_info.line = __LINE__} 
 #endif
 
+#define CHECK_PROCESSOR_RETURN(call) \
+    err = (call); \
+    if (err != kProcessorSuccess) { \
+        return err; \
+    }
+
+ProcessorErr_t StackErrToProcessorErr(StackErr_t err);
+
 ProcessorErr_t ProcessorCtor(Processor *processor_info, ssize_t capacity);
 ProcessorErr_t ProcessorVerify(Processor *processor_info);
 void ProcessorDump(Processor *processor_info, const char *func_name, int line, const char *file_from, const char *processor_name);

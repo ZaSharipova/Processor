@@ -17,64 +17,66 @@
 #define JE_SIGN ==
 #define JNE_SIGN !=
 
-// #define CHECK_JUMP(a, b, mode) ((a) mode (b))
+#define CHECK_JUMP(a, b, mode) ((a) mode (b))
+#define DEFAULT_COMMAND -1
 
-// void DoJump(Processor *peocessor_info, bool do_jump) {
-
-// }
-
-// DoJump(CHECK_JUMP(a, b >));
-
-#define DO_JUMP_COMPARE(mode)                                                                                 \
-    CHECK_STACK_RETURN(StackPop(&processor_info->stack, &number2));                                           \
-    CHECK_STACK_RETURN(StackPop(&processor_info->stack, &number1));                                           \
-    if (number1 mode number2) {                                                                               \
-        processor_info->instruction_counter = processor_info->code[processor_info->instruction_counter + 1];  \
-    } else {                                                                                                  \
-        processor_info->instruction_counter += 2;                                                             \
-    }                                                                                                         \
-    getchar();
+// #define DO_JUMP_COMPARE(mode)                                                                                         \
+//     CHECK_STACK_RETURN(StackPop(&processor_info->stack, &number2));                                                   \
+//     CHECK_STACK_RETURN(StackPop(&processor_info->stack, &number1));                                                   \
+//     if (number1 mode number2) {                                                                                       \
+//         processor_info->instruction_counter = (size_t)processor_info->code[processor_info->instruction_counter + 1];  \
+//     } else {                                                                                                          \
+//         processor_info->instruction_counter += 2;                                                                     \
+//     }                                                                                                                 \
+//     getchar();
 
 ProcessorErr_t Read(FILE *fin, Stack_t *code[], size_t *code_size) {
     assert(fin);
     assert(code);
+    assert(code_size);
 
-    Stack_t cmd = -1;
-    int pointer = 0;
+    Stack_t cmd = DEFAULT_COMMAND;
+    size_t pointer = 0;
 
     fscanf(fin, "%zd", code_size);
 
-    *code = (Stack_t *) calloc ((size_t)code_size, sizeof(Stack_t));
+    *code = (Stack_t *) calloc (*code_size, sizeof(Stack_t));
     if (*code == NULL) {
         return kNoMemory;
     }
 
-    while (pointer < (int)*code_size && fscanf(fin, "%d", &cmd) == 1) {
+    while (pointer < *code_size && fscanf(fin, "%d", &cmd) == 1) { // нужно ли здесь менять
         (*code)[pointer] = cmd;
+
         pointer++;
     }
+    // for (size_t i = 0; i < *code_size; ++i) {
+    //     fprintf(stderr, "DEBUG code[%zu] = %d\n", i, (int)(*code)[i]);
+    // }
 
-    return kSuccess;
+
+    return kProcessorSuccess;
 }
 
-int Calculate(FILE *fout, Processor *processor_info, int code_size) {
+int Calculate(FILE *fout, Processor *processor_info, size_t code_size) { //
     assert(fout);
     assert(processor_info);
 
-    ProcessorErr_t err = kSuccess;
-    CHECK_STACK_RETURN(ProcessorVerify(processor_info));
+    ProcessorErr_t err = kProcessorSuccess;
+    CHECK_PROCESSOR_RETURN(ProcessorVerify(processor_info));
 
     Stack_t number1 = 0, number2 = 0;
     Stack_t number_pop = 0;
-    int cmd = -1;
+    int cmd = DEFAULT_COMMAND;
 
     while (processor_info->instruction_counter < code_size && cmd != kHlt) {
         cmd = processor_info->code[processor_info->instruction_counter];
-        printf("%d - ", cmd);
-        for (int i = 0; i < processor_info->stack.size; i++) {
-            printf("%d. ", processor_info->stack.data[i]);
-        }
-        printf("\n");
+        // printf("%d - ", cmd);
+        // for (int i = 0; i < processor_info->stack.size; i++) {
+        //     printf("%d. ", processor_info->stack.data[i]);
+        // }
+        //printf("s%d ", processor_info->instruction_counter);
+        // printf("\n");
         switch (cmd) {
             case (kPush):
                 CHECK_ERROR_RETURN(Push_C(processor_info));
@@ -85,19 +87,19 @@ int Calculate(FILE *fout, Processor *processor_info, int code_size) {
                 break;
 
             case (kAdd):
-                CHECK_ERROR_RETURN(StackOperation(processor_info, Add_C));
+                CHECK_ERROR_RETURN(DoCalc(processor_info, Add_C));
                 break;
 
             case (kSub):
-                CHECK_ERROR_RETURN(StackOperation(processor_info, Sub_C));
+                CHECK_ERROR_RETURN(DoCalc(processor_info, Sub_C));
                 break;
 
             case (kMul):
-                CHECK_ERROR_RETURN(StackOperation(processor_info, Mul_C));
+                CHECK_ERROR_RETURN(DoCalc(processor_info, Mul_C));
                 break;
 
             case (kDiv):
-                CHECK_ERROR_RETURN(Div_C(processor_info));
+                CHECK_ERROR_RETURN(DoCalc(processor_info, Div_C));
                 break;
 
             case (kSqrt):
@@ -116,6 +118,14 @@ int Calculate(FILE *fout, Processor *processor_info, int code_size) {
                 CHECK_ERROR_RETURN(PopR_C(processor_info));
                 break;
 
+            case (kPushM):
+                CHECK_ERROR_RETURN(PushM_C(processor_info));
+                break;
+
+            case (kPopM):
+                CHECK_ERROR_RETURN(PopM_C(processor_info));
+                break;
+
             case (kIn):
                 CHECK_ERROR_RETURN(In_C(processor_info));
                 break;
@@ -125,23 +135,42 @@ int Calculate(FILE *fout, Processor *processor_info, int code_size) {
                 break;
 
             case(kJB):
-                DO_JUMP_COMPARE(JB_SIGN);
+                CHECK_ERROR_RETURN(PopTwoNumbers(processor_info, &number1, &number2));
+                DoJump(processor_info, CHECK_JUMP(number1, number2, JB_SIGN));
                 break;  
+
             case(kJBE):
-                DO_JUMP_COMPARE(JBE_SIGN);
+                CHECK_ERROR_RETURN(PopTwoNumbers(processor_info, &number1, &number2));
+                DoJump(processor_info, CHECK_JUMP(number1, number2, JBE_SIGN));
                 break;  
+
             case(kJA):
-                DO_JUMP_COMPARE(JA_SIGN);
+                CHECK_ERROR_RETURN(PopTwoNumbers(processor_info, &number1, &number2));
+                DoJump(processor_info, CHECK_JUMP(number1, number2, JA_SIGN));
                 break;  
+
             case(kJAE):
-                DO_JUMP_COMPARE(JAE_SIGN);
+                CHECK_ERROR_RETURN(PopTwoNumbers(processor_info, &number1, &number2));
+                DoJump(processor_info, CHECK_JUMP(number1, number2, JAE_SIGN));
                 break;  
+
             case(kJE):
-                DO_JUMP_COMPARE(JE_SIGN);
+                CHECK_ERROR_RETURN(PopTwoNumbers(processor_info, &number1, &number2));
+                DoJump(processor_info, CHECK_JUMP(number1, number2, JE_SIGN));
                 break;  
+
             case(kJNE):
-                DO_JUMP_COMPARE(JNE_SIGN);
+                CHECK_ERROR_RETURN(PopTwoNumbers(processor_info, &number1, &number2));
+                DoJump(processor_info, CHECK_JUMP(number1, number2, JNE_SIGN));
                 break;  
+
+            case (kCall):
+                CHECK_PROCESSOR_RETURN(Call_C(processor_info));
+                break;
+
+            case(kRet):
+                CHECK_PROCESSOR_RETURN(Ret_C(processor_info));
+                break;
 
             case (kHlt):
                 break;

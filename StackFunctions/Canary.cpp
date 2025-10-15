@@ -34,21 +34,21 @@ void InitCanaries(void) {
     canary_right = InitCanary();
 }
 
-ProcessorErr_t MakeCanary(Stack_Info *stk) {
+StackErr_t MakeCanary(Stack_Info *stk) {
     assert(stk);
 
 #ifdef _CANARY
     Stack_t *stack_ptr = (Stack_t *) calloc ((size_t)stk->capacity + 2, sizeof(*stack_ptr));
     if (stack_ptr == NULL) {
-        STACKDUMP(stk, kNoMemory);
-        return kNoMemory;
+        STACKDUMP(stk, kNoAllocMemory);
+        return kNoAllocMemory;
     }
 
     stk->data = stack_ptr + 1;
     stk->data[-1] = (Stack_t)canary_left;
     stk->data[stk->capacity] = (Stack_t)canary_right;
 
-    return kSuccess;
+    return kStackSuccess;
 #endif
-    return kSuccess;
+    return kStackSuccess;
 }

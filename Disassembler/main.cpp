@@ -5,9 +5,9 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "../Calculator/StructsEnums.h"
-#include "/Users/zarinasharipova/Assembler/HandleFileWork.h"
-#include "../Calculator/Parse/ParseCommandLine.h"
+#include "StructsEnums.h"
+#include "HandleFileWork.h"
+#include "ParseCommandLine.h"
 #include "DisAsm.h"
 #include "HandleLogFile.h"
 

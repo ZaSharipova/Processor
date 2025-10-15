@@ -12,12 +12,20 @@
 #include "FileOperations.h"
 #include "ParseCommandLine.h"
 #include "AssemblerEnums.h"
+#include "SubsidiaryFunctionsAssembler.h"
+#include "StackFunctions.h"
+#include "HandleLogFile.h"
 
-AsmError HandleBufRead(Files in_out_files, FileInfo *file_info) {
+static AsmError GetLabels(FileInfo *file_info, int *labels);
+
+static void AllBufRead(const Files *in_out_files, FileInfo *file_info) { //
+    assert(in_out_files);
     assert(file_info);
 
-    file_info->filesize = SizeOfFile(in_out_files.in_file);
-    file_info->buf_ptr = ReadToBuf(in_out_files.open_in_file, file_info->filesize);
+    file_info->filesize = SizeOfFile(in_out_files->in_file);
+    assert(file_info->filesize > 0);
+
+    file_info->buf_ptr = ReadToBuf(in_out_files->open_in_file, file_info->filesize);
     assert(file_info->buf_ptr != NULL);
 
     file_info->count_lines = CountLines(file_info->buf_ptr);
@@ -25,49 +33,6 @@ AsmError HandleBufRead(Files in_out_files, FileInfo *file_info) {
     assert(file_info->text_ptr != NULL);
 
     ParseBuf(file_info);
-
-    return kNoAsmError;
-}
-
-int CommandToEnum(const char *command) {
-    assert(command);
-
-    if (strcmp(command, PUSH)  == 0) return kPush;
-    if (strcmp(command, POP)   == 0) return kPop;
-    if (strcmp(command, ADD)   == 0) return kAdd;
-    if (strcmp(command, SUB)   == 0) return kSub;
-    if (strcmp(command, MUL)   == 0) return kMul;
-    if (strcmp(command, DIV)   == 0) return kDiv;
-    if (strcmp(command, SQRT)  == 0) return kSqrt;
-    if (strcmp(command, IN)    == 0) return kIn;
-    if (strcmp(command, OUT)   == 0) return kOut;
-    if (strcmp(command, PUSHR) == 0) return kPushR;
-    if (strcmp(command, POPR)  == 0) return kPopR;
-    if (strcmp(command, JB)    == 0) return kJB;
-    if (strcmp(command, JBE)   == 0) return kJBE;
-    if (strcmp(command, JA)    == 0) return kJA;
-    if (strcmp(command, JAE)   == 0) return kJAE;
-    if (strcmp(command, JE)    == 0) return kJE;
-    if (strcmp(command, JNE)   == 0) return kJNE;
-    if (strcmp(command, HLT)   == 0) return kHlt;
-
-    return -1; 
-}
-
-static const char *SkipWhitespace(const char *str) {
-    assert(str);
-
-    while (isspace((unsigned char) *str)) {
-        str++;
-    }
-
-    return str;
-}
-
-static int StringToInt(char *arg_str) {
-    assert(arg_str);
-
-    return (int)(arg_str[1] - 'A');
 }
 
 static AsmError ParseArgumentValue(char *arg_str, int *out_val, int *labels) {
@@ -99,12 +64,10 @@ static AsmError ParseArgumentValue(char *arg_str, int *out_val, int *labels) {
     return kNoAsmError;
 }
 
-
-int HandleParse(const char *line, FileInfo *file_info, int **buf_out, int *num_args, int *labels) {
+AsmError HandleParse(const char *line, FileInfo *file_info, Stack_Info *buf_out, int *labels) {
     assert(line);
     assert(file_info);
     assert(buf_out);
-    assert(num_args);
     assert(labels);
 
     const char *line_ptr = SkipWhitespace(line);
@@ -112,123 +75,88 @@ int HandleParse(const char *line, FileInfo *file_info, int **buf_out, int *num_a
         return kWhitespace;
     }
 
-    char *command = (char *) calloc (16, sizeof(char));
-    if (command == NULL) {
-        return kNoMemory;
-    }
-    char *arg_str = (char *) calloc (64, sizeof(char));
-    if (arg_str == NULL) {
-        free(command);
-        return kNoMemory;
-    }
+    char command[16] = {};
+    char arg_str[64] = {};
 
     int args_count = sscanf(line_ptr, "%15s %63s", command, arg_str);
 
-    //printf("%s %s\n", command, arg_str);
+    // fprintf(GetLogFile(), "DEBUG: line='%s' args_count=%d command='%s' arg='%s'\n",
+    //         line_ptr, args_count, command, arg_str);
+
+
     NumOfArgs has_arg = (args_count == 2) ? kOne : kZero;
     if (args_count != 1 && args_count != 2) {
-        free(command);
-        free(arg_str); //
         return kErrorZeroArgs;
     }
 
-    size_t pos = (size_t)file_info->instruction_counter;
-    size_t new_count = pos + (size_t)(has_arg + 1);
-
-    int *realloc_ptr = (int *) realloc (*buf_out, new_count * sizeof(int));
-    if (realloc_ptr == NULL) {
-        free(command);
-        free(arg_str);
-        return kNoMemory;
-    }
-
-    *buf_out = realloc_ptr;
-    file_info->instruction_counter = (int)new_count;
-
-    int arg_int = 0;
-    // if (has_arg == kOne) {
-    //     ParseArgumentValue(arg_str, &arg_int, labels);
-    // }
-
     int command_to_enum = CommandToEnum(command);
-    if (command_to_enum == -1) {
-        file_info->instruction_counter = (int)pos;
+    if (command_to_enum == kCommandNotFound) {
         return kNoAvailableCommand;
     }
 
+    Stack_t arg_int = 0;
     if (has_arg == kOne) {
         ParseArgumentValue(arg_str, &arg_int, labels);
     }
 
-    (*buf_out)[pos] = command_to_enum;
-    if (has_arg == kOne) (*buf_out)[pos + 1] = arg_int;
+    AsmError err = kNoAsmError;
+    CHECK_ERROR_RETURN((AsmError)StackPush(buf_out, (Stack_t)command_to_enum)); //
+    if (has_arg == kOne) {
+        CHECK_ERROR_RETURN((AsmError)StackPush(buf_out, arg_int));
+    }
 
-    free(command);
-    free(arg_str);
-    *num_args = has_arg + 1;
-
-    return kNoError;
+    return kNoAsmError;
 }
 
-void HandleWriteCommands(FILE *output, FileInfo *file_info, int *buf_out) {
+void HandleWriteCommands(FILE *output, FileInfo *file_info, const Stack_Info *buf_out) {
     assert(output);
     assert(file_info);
     assert(buf_out);
 
-    fprintf(output, "%d\n", file_info->instruction_counter);
+    fprintf(output, "%zd ", buf_out->size);
 
-    for (int i = 0; i < file_info->instruction_counter; i++) {
-        fprintf(output, "%d ", buf_out[i]);
+    for (int i = 0; i < buf_out->size; i++) {
+        fprintf(output, "%d ", buf_out->data[i]);
     }
 
 }
 
-
-int HandleAsm(FileInfo *file_info, Files in_out_files, int *labels) {
+AsmError HandleAsm(FileInfo *file_info, const Files *in_out_files, int *labels) {
     assert(file_info);
+    assert(in_out_files);
     assert(labels);
 
-    int *buf_out = (int *) calloc((size_t)file_info->instruction_counter, sizeof(int));
-    if (buf_out == NULL) {
-        return kNoMemory;
-    }
+    // AsmError err = 0;
+    INIT_STACK(buf_out);
+    StackCtor(&buf_out, 1);
 
-    for (int i = 0; i < file_info->count_lines; i++) {
+    for (size_t i = 0; i < (size_t)file_info->count_lines; i++) {
         LineInfo *line = &file_info->text_ptr[i];
 
-        int args_check = 0;
-        int handle_error = HandleParse(line->start_ptr, file_info, &buf_out, &args_check, labels);
+        AsmError handle_error = HandleParse(line->start_ptr, file_info, &buf_out, labels);
         if (handle_error < 0 && handle_error != kWhitespace) {
-            free(buf_out);
-            fprintf(stderr, "Parse error on line %d\n", i + 1);
+            StackDtor(&buf_out);
+            fprintf(GetLogFile(), "Parse error on line %lu\n", i + 1);
             return handle_error;
         }
     }
 
-    HandleWriteCommands(in_out_files.open_out_file, file_info, buf_out);
-    free(buf_out);
+    HandleWriteCommands(in_out_files->open_out_file, file_info, &buf_out);
+    StackDtor(&buf_out);
 
     free(file_info->buf_ptr);
     free(file_info->text_ptr);
 
-    return kNoError;
+    return kNoAsmError;
 }
 
-AsmError HandlePreAssemble(Files files, FileInfo *file_info, int *labels) {
+AsmError PrepareToAssemble(const Files *files, FileInfo *file_info, int *labels) {
     assert(file_info);
     assert(labels);
 
-    file_info->filesize = SizeOfFile(files.in_file);
-    file_info->buf_ptr = ReadToBuf(files.open_in_file, file_info->filesize);
-    assert(file_info->buf_ptr != NULL);
+    AllBufRead(files, file_info);
 
-    file_info->count_lines = CountLines(file_info->buf_ptr);
-    file_info->text_ptr = (LineInfo *) calloc((size_t)file_info->count_lines + 1, sizeof(LineInfo));
-    assert(file_info->text_ptr != NULL);
-    
-    ParseBuf(file_info);
-
-    AsmError err = PreAssemble(file_info, labels);
+    AsmError err = GetLabels(file_info, labels);
     if (err != kNoAsmError) {
         return err;
     }
@@ -239,7 +167,7 @@ AsmError HandlePreAssemble(Files files, FileInfo *file_info, int *labels) {
     return kNoAsmError;
 }
 
-AsmError PreAssemble(FileInfo *file_info, int *labels) {
+static AsmError GetLabels(FileInfo *file_info, int *labels) {
     assert(file_info);
     assert(labels);
 
@@ -265,35 +193,18 @@ AsmError PreAssemble(FileInfo *file_info, int *labels) {
             }
 
         } else {
+            const char *line_ptr = line->start_ptr;
 
-            const char *line_ptr = SkipWhitespace(line->start_ptr);
-            if (*line_ptr == '\0') {
-                return kWhitespace;
-            }
-
-            char *command = (char *) calloc (16, sizeof(char));
-            if (command == NULL) {
-                return kNoMemoryCalloc;
-            }
-
-            char *arg_str = (char *) calloc (64, sizeof(char));
-            if (arg_str == NULL) {
-                free(command);
-                return kNoMemoryCalloc;
-            }
+            char command[16] = {};
+            char arg_str[64] = {};
 
             int args_count = sscanf(line_ptr, "%15s %63s", command, arg_str);
             if (args_count == 0) {
                 printf("Error parse %s command address: %d\n", command, current_address);
-                free(command);
-                free(arg_str);
                 return kErrorZeroArgs;
 
             } else {
                 current_address += args_count;
-                //printf("%d ", current_address);
-                free(command);
-                free(arg_str);
             }
         }
     }
