@@ -71,11 +71,16 @@ int Calculate(FILE *fout, Processor *processor_info, size_t code_size) { //
 
     while (processor_info->instruction_counter < code_size && cmd != kHlt) {
         cmd = processor_info->code[processor_info->instruction_counter];
-        // printf("%d - ", cmd);
+        for (int i = 0; i < 100; i++) {
+            printf ("%d", processor_info->ram[i]);
+            if (i % 10 == 0) printf ("\n");
+        }
+
+        // printf("...%d - ", cmd);
         // for (int i = 0; i < processor_info->stack.size; i++) {
         //     printf("%d. ", processor_info->stack.data[i]);
         // }
-        //printf("s%d ", processor_info->instruction_counter);
+        // printf("s%zu ", processor_info->instruction_counter);
         // printf("\n");
         switch (cmd) {
             case (kPush):
@@ -119,9 +124,8 @@ int Calculate(FILE *fout, Processor *processor_info, size_t code_size) { //
                 break;
 
             case (kPushM):
-                CHECK_ERROR_RETURN(PushM_C(processor_info));
-                break;
-
+                CHECK_ERROR_RETURN(PushM_C(processor_info)); 
+                break; // нужно ли перенести break на предыдущую строку
             case (kPopM):
                 CHECK_ERROR_RETURN(PopM_C(processor_info));
                 break;

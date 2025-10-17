@@ -247,17 +247,28 @@ ProcessorErr_t PushM_C(Processor *processor_info) {
     assert(processor_info);
 
     ProcessorErr_t err = kProcessorSuccess;
-    Stack_t number_pop = 0;
-    CHECK_PROCESSOR_RETURN(StackErrToProcessorErr(StackPop(&processor_info->stack, &number_pop)));
-    processor_info->ram[processor_info->code[processor_info->instruction_counter ++]] = number_pop;
 
+    Stack_t reg_index = processor_info->code[processor_info->code[processor_info->instruction_counter]];
+    Stack_t ram_index = processor_info->regs[reg_index];
+
+    Stack_t value = processor_info->ram[ram_index];
+    CHECK_PROCESSOR_RETURN(StackErrToProcessorErr(StackPush(&processor_info->stack, value)));
+    processor_info->instruction_counter +=2;
     return kProcessorSuccess;
 }
 
 ProcessorErr_t PopM_C(Processor *processor_info) {
     assert(processor_info);
 
-    StackPush(&processor_info->stack, processor_info->ram[processor_info->code[processor_info->instruction_counter ++]]);
+    Stack_t number = 0;
+    ProcessorErr_t err = kProcessorSuccess;
+    CHECK_PROCESSOR_RETURN(StackErrToProcessorErr(StackPop(&processor_info->stack, &number)));
+    int reg_index = processor_info->code[processor_info->instruction_counter + 1];
+    Stack_t ram_index = processor_info->regs[reg_index];
+    processor_info->ram[ram_index] = number;
+
+    processor_info->instruction_counter +=2;
+
     return kProcessorSuccess;
 }
 

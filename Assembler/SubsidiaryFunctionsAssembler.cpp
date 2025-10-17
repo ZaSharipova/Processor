@@ -7,34 +7,44 @@
 
 #include "AssemblerEnums.h"
 
+const CommandsInfo commands[] = {
+    {"HLT",   0, kHlt, 3},
+    {"PUSHR", 1, kPushR, 5},
+    {"PUSHM", 1, kPushM, 5},
+    {"PUSH",  1, kPush, 4},
+    {"POPR",  1, kPopR, 4},
+    {"POPM",  1, kPopM, 4},
+    {"POP",   1, kPop, 3},
+    {"ADD",   0, kAdd, 3},
+    {"SUB",   0, kSub, 3},
+    {"MUL",   0, kMul, 3},
+    {"DIV",   0, kDiv, 3},
+    {"SQRT",  0, kSqrt, 4},
+    {"OUT",   0, kOut, 3},
+    {"IN",    0, kIn, 2},
+    {"JMP",   1, kJmp, 3},
+    {"JBE",   1, kJBE, 3},
+    {"JB",    1, kJB, 2},
+    {"JAE",   1, kJAE, 3},
+    {"JA",    1, kJA, 2},
+    {"JNE",   1, kJNE, 3},
+    {"JE",    1, kJE, 2},
+    {"CALL",  1, kCall, 4},
+    {"RET",   0, kRet, 3},
+    {NULL,    0, kCommandNotFound, 0}
+};
+
 int CommandToEnum(const char *command) {
     assert(command);
 
-    if (strncmp(command, PUSHR, sizeof(PUSHR) - 1) == 0) return kPushR;
-    if (strncmp(command, PUSHM, sizeof(PUSHM) - 1) == 0) return kPushM;
-    if (strncmp(command, POPR,  sizeof(POPR) - 1)  == 0) return kPopR;
-    if (strncmp(command, POPM,  sizeof(POPM) - 1)  == 0) return kPopM;
+    for (size_t i = 0; commands[i].command_name != NULL; i++) {
+        if (strncmp(command, commands[i].command_name, commands[i].command_len) == 0) {
+            return commands[i].command_num;
+        }
+    }
 
-    if (strncmp(command, PUSH,  sizeof(PUSH) - 1)  == 0) return kPush;
-    if (strncmp(command, POP,   sizeof(POP) - 1)   == 0) return kPop;
-    if (strncmp(command, ADD,   sizeof(ADD) - 1)   == 0) return kAdd;
-    if (strncmp(command, SUB,   sizeof(SUB) - 1)   == 0) return kSub;
-    if (strncmp(command, MUL,   sizeof(MUL) - 1)   == 0) return kMul;
-    if (strncmp(command, DIV,   sizeof(DIV) - 1)   == 0) return kDiv;
-    if (strncmp(command, SQRT,  sizeof(SQRT) - 1)  == 0) return kSqrt;
-    if (strncmp(command, IN,    sizeof(IN) - 1)    == 0) return kIn;
-    if (strncmp(command, OUT,   sizeof(OUT) - 1)   == 0) return kOut;
-    if (strncmp(command, JBE,   sizeof(JBE) - 1)   == 0) return kJBE;
-    if (strncmp(command, JB,    sizeof(JB) - 1)    == 0) return kJB;
-    if (strncmp(command, JAE,   sizeof(JAE) - 1)   == 0) return kJAE;
-    if (strncmp(command, JA,    sizeof(JA) - 1)    == 0) return kJA;
-    if (strncmp(command, JE,    sizeof(JE) - 1)    == 0) return kJE;
-    if (strncmp(command, JNE,   sizeof(JNE) - 1)   == 0) return kJNE;
-    if (strncmp(command, HLT,   sizeof(HLT) - 1)   == 0) return kHlt;
-    if (strncmp(command, CALL,  sizeof(CALL) -1)   == 0)   return kCall;
-    if (strncmp(command, RET,   sizeof(RET) - 1)   == 0)   return kRet;
-
-    return kCommandNotFound; 
+    printf("12 ");
+    return kCommandNotFound;
 }
 
 const char *SkipWhitespace(const char *str) {
@@ -51,4 +61,12 @@ int StringToInt(char *arg_str) {
     assert(arg_str);
 
     return (int)(arg_str[1] - 'A');
+}
+
+void InitLabels(int *labels) {
+    assert(labels);
+
+    for (int i = 0; i < 12; i++) {
+        labels[i] = -1;
+    }
 }

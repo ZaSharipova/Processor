@@ -23,5 +23,8 @@ FILE *GetLogFile(void) {
 }
 
 ParseErr_t CloseLogFile(void) { //
-    return CloseFile(opened_file);
+    if (opened_file != stdout) {
+        return CloseFile(opened_file);
+    }
+    return kNoError;
 }

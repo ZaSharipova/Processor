@@ -16,11 +16,11 @@
 
 // void AllBufRead(const Files *in_out_files, FileInfo *file_info);
 // void WriteCommand(FILE *output, int command, int has_arg, int arg);
-AsmError HandleParse(const char *line, FileInfo *file_info, Stack_Info *buf_out, int *labels);
-AsmError HandleAsm(FileInfo *file_info, const Files *in_out_files, int *labels);
+AsmError DoParse(const char *line, FileInfo *file_info, Stack_Info *buf_out, Labels *labels);
+AsmError DoAsm(FileInfo *file_info, const Files *in_out_files, Labels *labels);
 void HandleWriteCommands(FILE *output, FileInfo *file_info, const Stack_Info *buf_out);
 
-AsmError PrepareToAssemble(const Files *files, FileInfo *file_info, int *labels);
+AsmError PrepareToAssemble(const Files *files, FileInfo *file_info, Labels *labels);
 
 AsmError PreAssemble(FileInfo *file_info, int *labels);
 

@@ -90,9 +90,9 @@ void ParseBuf(FileInfo *file_info) {
                 char *ptr = line_start;
                 while (isspace((unsigned char)*ptr)) ptr++;
 
-                char *semicolon = strchr(ptr, ';');
-                if (semicolon) {
-                    *semicolon = '\0';
+                char *semicolon_is = strchr(ptr, ';');
+                if (semicolon_is) {
+                    *semicolon_is = '\0';
                 }
 
                 if (*ptr != '\0') {

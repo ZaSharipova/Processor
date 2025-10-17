@@ -7,6 +7,7 @@
 #include "FileOperations.h"
 #include "ParseCommandLine.h"
 #include "HandleLogFile.h"
+#include "SubsidiaryFunctionsAssembler.h"
 
 int main(int argc, const char *argv[]) {
     Files in_out_files = {NULL, NULL, NULL, NULL};
@@ -17,21 +18,20 @@ int main(int argc, const char *argv[]) {
     SetLogFile(in_out_files.log_file);
     CALL_CHECK_IN_OUT_RETURN(HandleOpenFile(&in_out_files));
 
-    int labels[10] = {0};
-    for (int i = 0; i < 10; i++) {
-        labels[i] = -1;
-    } //
+    Labels labels = {};
+    //InitLabels(labels);
     
     FileInfo file_info = {};
 
-    AsmError err = PrepareToAssemble(&in_out_files, &file_info, labels);
-    if (err != kNoAsmError) {
-        return err;
-    }
+    AsmError err = kNoAsmError;
+    CALL_CHECK_ASM_RETURN(PrepareToAssemble(&in_out_files, &file_info, &labels));
 
-    err = HandleAsm(&file_info, &in_out_files, labels);
-    if (err != kNoAsmError) {
-        return err;
+    CALL_CHECK_ASM_RETURN(DoAsm(&file_info, &in_out_files, &labels));
+
+    read_write_error = CloseLogFile();
+    if (read_write_error != kNoError) {
+        CALL_CHECK_IN_OUT_RETURN(HandleCloseFile(&in_out_files));
+        return read_write_error;
     }
 
     CALL_CHECK_IN_OUT_RETURN(HandleCloseFile(&in_out_files));

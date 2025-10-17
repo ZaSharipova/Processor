@@ -32,10 +32,7 @@ int main(int argc, const char *argv[]) {
 
     CHECK_ERROR_AND_CLOSE_FILE_RETURN(ProcessorDtor(&processor_info)); 
 
-    err = CloseLogFile();
-    if (err != kNoError) {
-        return err;
-    }
+    CHECK_ERROR_AND_CLOSE_FILE_RETURN(CloseLogFile());
 
     return HandleCloseFile(&in_out_files);
 }

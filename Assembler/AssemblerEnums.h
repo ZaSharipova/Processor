@@ -4,7 +4,9 @@
 #include <stdio.h>
 
 #include "StructsEnums.h"
+#include "SubsidiaryFunctionsAssembler.h"
 
+#define MAX_ARR_SIZE 20
 #define ERROR_CHECK_RETURN(call) \
     err = (call); \
     if (err != kNoErrorAsm) { \
@@ -29,83 +31,41 @@ enum NumOfArgs {
     kOne = 1,
 };
 
-#define PUSH "PUSH"
-#define POP "POP"
-#define ADD "ADD"
-#define SUB "SUB"
-#define MUL "MUL"
-#define DIV "DIV"
-#define SQRT "SQRT"
-#define OUT "OUT"
-#define PUSHR "PUSHR"
-#define POPR  "POPR"
-#define IN    "IN"
-#define HLT   "HLT"
-#define JMP   "JMP"
-#define JB    "JB"
-#define JBE   "JBE"
-#define JA    "JA"
-#define JAE   "JAE"
-#define JE    "JE"
-#define JNE   "JNE"
-#define CALL "CALL"
-#define RET "RET"
-#define PUSHM "PUSHM"
-#define POPM "POPM"
-
-// typedef struct {
-//     int command_code;
-//     int arg_count;
-// } CommandInfo;
-
-// const CommandInfo Commands[] = {
-//     {kHlt,   0},
-//     {kPush,  1},
-//     {kPop,   1},
-//     {kAdd,   0},
-//     {kSub,   0},
-//     {kMul,   0},
-//     {kDiv,   0},
-//     {kSqrt,  0},
-//     {kOut,   0},
-//     {kPushR, 1},
-//     {kPopR,  1},
-//     {kIn,    0},
-//     {kJmp,   1},
-//     {kJB,    1},
-//     {kJBE,   1},
-//     {kJA,    1},
-//     {kJAE,   1},
-//     {kJE,    1},
-//     {kJNE,   1}
-// };
-
 enum Convert {
     kCommandNotFound = -1,
-    kHlt   = 0,
-    kPush  = 1,
-    kPop   = 2,
-    kAdd   = 3,
-    kSub   = 4,
-    kMul   = 5,
-    kDiv   = 6,
-    kSqrt  = 7,
-    kOut   = 8,
-    kPushR = 9,
-    kPopR  = 10,
-    kIn    = 11,
-    kJmp   = 12,
-    kJB    = 13,
-    kJBE   = 14,
-    kJA    = 15,
-    kJAE   = 16,
-    kJE    = 17,
-    kJNE   = 18,
-    kCall  = 19,
-    kRet   = 20,
-    kPushM = 21,
-    kPopM  = 22,
+    kHlt    = 0,
+    kPushR  = 1,
+    kPushM  = 2,
+    kPush   = 3,
+    kPopR   = 4,
+    kPopM   = 5,
+    kPop    = 6,
+    kAdd    = 7,
+    kSub    = 8,
+    kMul    = 9,
+    kDiv    = 10,
+    kSqrt   = 11,
+    kOut    = 12,
+    kIn     = 13,
+    kJmp    = 14,
+    kJBE    = 15,
+    kJB     = 16,
+    kJAE    = 17,
+    kJA     = 18,
+    kJNE    = 19,
+    kJE     = 20,
+    kCall   = 21,
+    kRet    = 22
 };
+
+typedef struct {
+    const char *command_name;
+    size_t num_args;
+    int command_num;
+    size_t command_len;
+} CommandsInfo;
+
+extern const CommandsInfo commands[];
 
 typedef struct {
     char *start_ptr;
@@ -122,11 +82,20 @@ typedef struct {
     LineInfo *text_ptr;
 } FileInfo;
 
+typedef struct {
+    char name[MAX_ARR_SIZE];
+    int address;
+} Label;
 
 typedef struct {
-    Stack_Info stack;
-    int labels[10];
-    int gotomap[10];
+    Label data[MAX_ARR_SIZE];
+    size_t count;
+} Labels;
+
+typedef struct {
+    Stack_Info data;
+    Labels labels[MAX_ARR_SIZE];
+    //int gotomap[MAX_ARR_SIZE];
 } AssemblerInfo;
 
 #endif //ASSEMBLER_ENUMS_H_

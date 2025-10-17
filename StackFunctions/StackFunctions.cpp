@@ -252,7 +252,6 @@ void StackDump(Stack_Info stk, const char *func_name, int line, const char *file
         if (error & bit_mask) {
             fprintf(open_log_file, "%s%s%s ", RED(open_log_file), GetErrorString[i], RESET(open_log_file));
         }
-        // bit <<= 1;
     }
 
     fprintf(open_log_file, "\nfrom %s, function %s: line %d\n", file_from, func_name, line);

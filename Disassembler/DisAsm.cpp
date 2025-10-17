@@ -60,7 +60,7 @@ static char IntToString(int arg_int) {
     return (char)(arg_int + 'A');
 }
 
-int HandleParseAsm(const char *line, FileInfo *file_info, char **buf_out, int *num_args) { //
+int DoParseAsm(const char *line, FileInfo *file_info, char **buf_out, int *num_args) { //
     assert(file_info);
     assert(buf_out);
     assert(num_args);
@@ -126,7 +126,7 @@ int HandleParseAsm(const char *line, FileInfo *file_info, char **buf_out, int *n
 
 
 
-// int HandleParseAsm(const char *line, FileInfo *file_info, char **buf_out, int *num_args) {
+// int DoParseAsm(const char *line, FileInfo *file_info, char **buf_out, int *num_args) {
 //     assert(line);
 //     assert(file_info);
 //     assert(buf_out);
@@ -191,7 +191,7 @@ int HandleParseAsm(const char *line, FileInfo *file_info, char **buf_out, int *n
 
 
 
-// int HandleParseAsm(const char *line, FileInfo *file_info, char **buf_out, int *num_args) {
+// int DoParseAsm(const char *line, FileInfo *file_info, char **buf_out, int *num_args) {
 //     assert(line);
 //     assert(file_info);
 //     assert(buf_out);
@@ -285,7 +285,7 @@ int HandleDisAsm(FileInfo *file_info, Files in_out_files) {
         line_buf[len] = '\0';
         
         int args_check = 0;
-        int handle_error = HandleParseAsm(line_buf, file_info, &buf_out, &args_check);
+        int handle_error = DoParseAsm(line_buf, file_info, &buf_out, &args_check);
         if (handle_error < 0) {
             free(buf_out);
             return handle_error;
