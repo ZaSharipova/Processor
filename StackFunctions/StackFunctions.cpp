@@ -8,7 +8,7 @@
 
 #include "Canary.h"
 #include "StructsEnums.h"
-#include "HandleLogFile.h"
+#include "DoLogFile.h"
 #include "CalculatorCommands.h"
 
 static ReallocMode CheckSize(ssize_t size, ssize_t *capacity);

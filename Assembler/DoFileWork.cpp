@@ -1,4 +1,4 @@
-#include "HandleFileWork.h"
+#include "DoFileWork.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,7 +14,7 @@
 #include "AssemblerEnums.h"
 #include "SubsidiaryFunctionsAssembler.h"
 #include "StackFunctions.h"
-#include "HandleLogFile.h"
+#include "DoLogFile.h"
 
 #define MAX_ARG_LEN 16
 

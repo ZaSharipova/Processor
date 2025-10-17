@@ -4,12 +4,12 @@
 
 #include "StructsEnums.h"
 #include "CalculatorCommands.h"
-#include "HandleCalc.h"
+#include "DoCalc.h"
 #include "FileOperations.h"
 #include "StackFunctions.h"
 #include "ProcessorFunctions.h"
 #include "ParseCommandLine.h"
-#include "HandleLogFile.h"
+#include "DoLogFile.h"
 
 int main(int argc, const char *argv[]) {
     Files in_out_files = {NULL, NULL, NULL, NULL};
@@ -18,7 +18,7 @@ int main(int argc, const char *argv[]) {
 
     CALL_CHECK_IN_OUT_RETURN(ParseCommandLine(argv, argc, &in_out_files));
     SetLogFile(in_out_files.log_file);
-    CALL_CHECK_IN_OUT_RETURN(HandleOpenFile(&in_out_files));
+    CALL_CHECK_IN_OUT_RETURN(DoOpenFile(&in_out_files));
 
     INIT_PROCESSOR_INFO(processor_info);
 
@@ -34,5 +34,5 @@ int main(int argc, const char *argv[]) {
 
     CHECK_ERROR_AND_CLOSE_FILE_RETURN(CloseLogFile());
 
-    return HandleCloseFile(&in_out_files);
+    return DoCloseFile(&in_out_files);
 }

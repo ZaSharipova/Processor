@@ -10,7 +10,7 @@
 #include "AssemblerEnums.h"
 #include "StructsEnums.h"
 #include "FileOperations.h"
-#include "HandleLogFile.h"
+#include "DoLogFile.h"
 #include "ParseCommandLine.h" //
 
 static ParseErr_t OpenFileOrDefault(const char *filename, const char *mode, FILE **file_ptr, FILE *default_file);
@@ -156,7 +156,7 @@ void PrintError(AsmError err_type) {
     }
 }
 
-ParseErr_t HandleOpenFile(Files *in_out_files) {
+ParseErr_t DoOpenFile(Files *in_out_files) {
     assert(in_out_files);
 
     ParseErr_t read_write_error = kNoError; 
@@ -181,7 +181,7 @@ ParseErr_t HandleOpenFile(Files *in_out_files) {
     return kNoError;
 }
 
-ParseErr_t HandleCloseFile(const Files *in_out_files) {
+ParseErr_t DoCloseFile(const Files *in_out_files) {
     assert(in_out_files);
 
     ParseErr_t read_write_error = kNoError;

@@ -3,10 +3,10 @@
 #include <assert.h>
 
 #include "StructsEnums.h"
-#include "HandleFileWork.h"
+#include "DoFileWork.h"
 #include "FileOperations.h"
 #include "ParseCommandLine.h"
-#include "HandleLogFile.h"
+#include "DoLogFile.h"
 #include "SubsidiaryFunctionsAssembler.h"
 
 int main(int argc, const char *argv[]) {
@@ -16,7 +16,7 @@ int main(int argc, const char *argv[]) {
 
     CALL_CHECK_IN_OUT_RETURN(ParseCommandLine(argv, argc, &in_out_files));
     SetLogFile(in_out_files.log_file);
-    CALL_CHECK_IN_OUT_RETURN(HandleOpenFile(&in_out_files));
+    CALL_CHECK_IN_OUT_RETURN(DoOpenFile(&in_out_files));
 
     Labels labels = {};
     //InitLabels(labels);
@@ -30,10 +30,10 @@ int main(int argc, const char *argv[]) {
 
     read_write_error = CloseLogFile();
     if (read_write_error != kNoError) {
-        CALL_CHECK_IN_OUT_RETURN(HandleCloseFile(&in_out_files));
+        CALL_CHECK_IN_OUT_RETURN(DoCloseFile(&in_out_files));
         return read_write_error;
     }
 
-    CALL_CHECK_IN_OUT_RETURN(HandleCloseFile(&in_out_files));
+    CALL_CHECK_IN_OUT_RETURN(DoCloseFile(&in_out_files));
     return kNoError;
 }

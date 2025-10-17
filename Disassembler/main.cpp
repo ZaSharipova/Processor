@@ -6,10 +6,10 @@
 #include <assert.h>
 
 #include "StructsEnums.h"
-#include "HandleFileWork.h"
+#include "DoFileWork.h"
 #include "ParseCommandLine.h"
 #include "DisAsm.h"
-#include "HandleLogFile.h"
+#include "DoLogFile.h"
 
 int main(int argc, const char *argv[]) {
     Files in_out_files = {NULL, NULL, NULL, NULL, NULL};
@@ -17,12 +17,12 @@ int main(int argc, const char *argv[]) {
     int err = 0;
 
     CALL_CHECK_IN_OUT_RETURN(ParseCommandLine(argv, argc, &in_out_files));
-    CALL_CHECK_IN_OUT_RETURN(HandleOpenFile(&in_out_files));
+    CALL_CHECK_IN_OUT_RETURN(DoOpenFile(&in_out_files));
 
     FileInfo file_info = {};
 
-    return HandleDisAsm(&file_info, in_out_files);
+    return DoDisAsm(&file_info, in_out_files);
 
-    CALL_CHECK_IN_OUT_RETURN(HandleCloseFile(in_out_files));
+    CALL_CHECK_IN_OUT_RETURN(DoCloseFile(in_out_files));
     return 0;
 }

@@ -6,11 +6,11 @@
 #define CALL_CHECK_ASM_RETURN(call) \
     err = (call); \
     if (err != kNoAsmError) { \
-        HandleCloseFile(&in_out_files); \
+        DoCloseFile(&in_out_files); \
         CloseLogFile(); \
         return err; \
     }
-    
+
 int CommandToEnum(const char *command);
 const char *SkipWhitespace(const char *str);
 int StringToInt(char *arg_str);

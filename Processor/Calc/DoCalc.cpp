@@ -1,4 +1,4 @@
-#include "HandleCalc.h"
+#include "DoCalc.h"
 
 #include <stdio.h>
 #include <stdlib.h>

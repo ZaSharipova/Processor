@@ -6,7 +6,7 @@
 
 #include "StructsEnums.h"
 #include "FileOperations.h"
-#include "HandleLogFile.h"
+#include "DoLogFile.h"
 
 ParseErr_t ParseCommandLine(const char **argv, int argc, Files *in_out_files) {
     assert(argv);

@@ -5,7 +5,7 @@
 
 #include "StructsEnums.h"
 #include "StackFunctions.h"
-#include "HandleLogFile.h"
+#include "DoLogFile.h"
 
 ProcessorErr_t StackErrToProcessorErr(StackErr_t err) {
     switch (err) {

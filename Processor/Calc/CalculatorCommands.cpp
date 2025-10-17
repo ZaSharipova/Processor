@@ -9,7 +9,7 @@
 #include "StackFunctions.h"
 #include "AssemblerEnums.h"
 #include "ProcessorFunctions.h"
-#include "HandleLogFile.h"
+#include "DoLogFile.h"
 
 static double SqrtFind(Stack_t n);
 const int DIVZERO = -INT_MAX; //

@@ -10,7 +10,7 @@
 
 #include "StructsEnums.h"
 #include "AssemblerEnums.h"
-#include "HandleFileWork.h"
+#include "DoFileWork.h"
 #include "FileOperations.h"
 
 // PossibleErrorsAsm HandleBufRead(Files in_out_files, FileInfo *file_info) {
@@ -237,7 +237,7 @@ int DoParseAsm(const char *line, FileInfo *file_info, char **buf_out, int *num_a
 //     return kNoError;
 // }
 
-void HandleWriteCommandsBack(FILE *output, FileInfo *file_info, char *buf_out) {
+void WriteCommandsBack(FILE *output, FileInfo *file_info, char *buf_out) {
     assert(output);
     assert(file_info);
     assert(buf_out);
@@ -263,7 +263,7 @@ void HandleWriteCommandsBack(FILE *output, FileInfo *file_info, char *buf_out) {
     }
 }
 
-int HandleDisAsm(FileInfo *file_info, Files in_out_files) {
+int DoDisAsm(FileInfo *file_info, Files in_out_files) {
     assert(file_info);
 
     AsmError err = HandleBufRead(in_out_files, file_info);
@@ -298,7 +298,7 @@ int HandleDisAsm(FileInfo *file_info, Files in_out_files) {
         free(line_buf);
     }
     
-    HandleWriteCommandsBack(in_out_files.open_out_file, file_info, buf_out);
+    WriteCommandsBack(in_out_files.open_out_file, file_info, buf_out);
     free(buf_out);
 
     free(file_info->buf_ptr);
