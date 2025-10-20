@@ -5,7 +5,18 @@
 #include "DoFileWork.h"
 #include "AssemblerEnums.h"
 
-int DoDisAsm(FileInfo *file_info, Files in_out_files);
+// AsmError DoPrepareToDisasm(FileInfo *file_info, Labels *labels, Files *in_out_files);
+// AsmError PrepareToDisasm(const char *line, FileInfo *file_info, Labels *labels, bool flag_do_what);
+// int DoParseAsm(const char *line, FileInfo *file_info,
+//                unsigned char **buf_out, int *instr_count, int *buf_capacity, int *buf_size);
+// void WriteCommandsBack(FILE *output, FileInfo *file_info, const unsigned char *buf_out, int instr_count, int buf_size) ;
+// int DoDisAsm(FileInfo *file_info, const Files *in_out_files) ;
+
+
+AsmError DoPrepareToDisasm(FILE *input, Labels *labels);
+AsmError WriteCommandsBack(FILE *output, FILE *input, const Labels *labels);
+AsmError DoDisAsm(FileInfo *file_info, const Files *in_out_files) ;
+
 // PossibleErrorsAsm HandleBufRead(Files in_out_files, FileInfo *file_info);
 
 #endif //DIS_ASM_H_
