@@ -19,7 +19,7 @@
 #include "DoLogFile.h"
 
 #define MAX_ARG_LEN 16
-static AsmError GetLabels(FileInfo *file_info, Labels *labels);
+static AsmError GetLabels(FileInfo *file_info, Labels *labels, ssize_t *size);
 void AddLabel(Labels *labels, const char *name, int address);
 int FindLabel(const Labels *labels, const char *name);
 static void WriteCommandsOut(FILE *output, FileInfo *file_info, const Stack_Info *buf_out);
@@ -42,9 +42,10 @@ void AllBufRead(const Files *in_out_files, FileInfo *file_info) {
     ParseBuf(file_info);
 }
 
-AsmError PrepareToAssemble(const Files *files, FileInfo *file_info, Labels *labels) {
+AsmError PrepareToAssemble(const Files *files, FileInfo *file_info, Labels *labels, ssize_t *size) {
     assert(file_info);
     assert(labels);
+    assert(size);
 
     AllBufRead(files, file_info);
 
@@ -53,7 +54,7 @@ AsmError PrepareToAssemble(const Files *files, FileInfo *file_info, Labels *labe
     //     printf("%s ", labels->data[i].name);
     // }
     // return kNoAsmError;
-    return GetLabels(file_info, labels);
+    return GetLabels(file_info, labels, size);
 }
 
 AsmError DoAsm(FileInfo *file_info, const Files *in_out_files, AssemblerInfo *Assembler) {
@@ -63,10 +64,11 @@ AsmError DoAsm(FileInfo *file_info, const Files *in_out_files, AssemblerInfo *As
 
     StackCtor(&Assembler->data, 1);
 
+    // Assembler->data.size = data_size;
     for (size_t i = 0; i < (size_t)file_info->count_lines; i++) {
         LineInfo *line = &file_info->text_ptr[i];
 
-        AsmError handle_error = DoParse(line->start_ptr, file_info, &Assembler->data, &Assembler->labels, &Assembler->data.size);
+        AsmError handle_error = DoParse(line->start_ptr, file_info, &Assembler->data, &Assembler->labels);
         if (handle_error < 0 && handle_error != kWhitespace) {
             StackDtor(&(Assembler->data));
             fprintf(GetLogFile(), "Parse error on line %lu\n", i + 1);
@@ -75,8 +77,6 @@ AsmError DoAsm(FileInfo *file_info, const Files *in_out_files, AssemblerInfo *As
     }
 
     WriteCommandsOut(in_out_files->open_out_file, file_info, &(Assembler->data));
-
-    StackDtor(&Assembler->data);
 
     free(file_info->buf_ptr);
     free(file_info->text_ptr);
@@ -116,50 +116,6 @@ static AsmError ParseArgumentValue(char *arg_str, int *out_val, Labels *labels) 
     *out_val = StringToInt(arg_str);
     return kNoAsmError;
 }
-
-// AsmError DoParse(const char *line, FileInfo *file_info, Stack_Info *buf_out, Labels *labels) {
-//     assert(line);
-//     assert(file_info);
-//     assert(buf_out);
-//     assert(labels);
-
-//     const char *line_ptr = SkipWhitespace(line);
-//     if (*line_ptr == '\0') {
-//         return kWhitespace;
-//     }
-
-//     char command[16] = {};
-//     char arg_str[64] = {};
-
-//     int args_count = sscanf(line_ptr, "%15s %63s", command, arg_str);
-
-//     // fprintf(GetLogFile(), "DEBUG: line='%s' args_count=%d command='%s' arg='%s'\n",
-//     //         line_ptr, args_count, command, arg_str);
-
-
-//     NumOfArgs has_arg = (args_count == 2) ? kOne : kZero;
-//     if (args_count != 1 && args_count != 2) {
-//         return kErrorZeroArgs;
-//     }
-
-//     int command_to_enum = CommandToEnum(command);
-//     if (command_to_enum == kCommandNotFound) {
-//         return kNoAvailableCommand;
-//     }
-
-//     Stack_t arg_int = 0;
-//     if (has_arg == kOne) {
-//         ParseArgumentValue(arg_str, &arg_int, labels);
-//     }
-
-//     AsmError err = kNoAsmError;
-//     CHECK_ERROR_RETURN((AsmError)StackPush(buf_out, (Stack_t)command_to_enum)); //
-//     if (has_arg == kOne) {
-//         CHECK_ERROR_RETURN((AsmError)StackPush(buf_out, arg_int));
-//     }
-
-//     return kNoAsmError;
-// }
 
 static AsmError DoScanfAndConvert(const char *line_ptr, FileInfo *file_info, Stack_Info *buf_out, Labels *labels, bool flag_push, int *num_instructions) {
     assert(line_ptr);
@@ -215,7 +171,7 @@ static AsmError DoScanfAndConvert(const char *line_ptr, FileInfo *file_info, Sta
     return kNoAsmError;
 }
 
-AsmError DoParse(const char *line, FileInfo *file_info, Stack_Info *buf_out, Labels *labels, ssize_t *code_size) {
+AsmError DoParse(const char *line, FileInfo *file_info, Stack_Info *buf_out, Labels *labels) {
     assert(line);
     assert(file_info);
     assert(buf_out);
@@ -248,9 +204,10 @@ static void WriteCommandsOut(FILE *output, FileInfo *file_info, const Stack_Info
     }
 }
 
-static AsmError GetLabels(FileInfo *file_info, Labels *labels) {
+static AsmError GetLabels(FileInfo *file_info, Labels *labels, ssize_t *size) {
     assert(file_info);
     assert(labels);
+    assert(size);
 
     int current_address = 0;
     for (int i = 0; i < file_info->count_lines; i++) {
@@ -289,6 +246,7 @@ static AsmError GetLabels(FileInfo *file_info, Labels *labels) {
             }
         }
     }
+    *size = current_address;
     
     return kNoAsmError;
 }
@@ -320,76 +278,3 @@ int FindLabel(const Labels *labels, const char *name) {
 
     return -1;
 }
-
-void PrintAssemblerListing(FILE *listing_file, const AssemblerInfo *Assembler) {
-    assert(listing_file);
-    assert(Assembler);
-
-    const Stack_Info *code = &Assembler->data;
-    const Labels *labels = &Assembler->labels;
-
-    fprintf(listing_file, "==== Assembler Listing ====\n\n");
-    fprintf(listing_file, "%-8s %-10s %-10s\n", "ADDR", "COMMAND", "ARG");
-
-    int ip = 0; // instruction pointer (address)
-    printf("%d", code->size);
-    while (ip < code->size) {
-        int cmd_num = (int)code->data[ip];
-
-        // Проверяем, есть ли метка на этом адресе
-        for (size_t j = 0; j < labels->count; j++) {
-            if (labels->data[j].address == ip) {
-                fprintf(listing_file, "\n%s:\n", labels->data[j].name);
-                break;
-            }
-        }
-
-        const CommandsInfo *cmd_info = &commands[cmd_num];
-        if (!cmd_info) {
-            fprintf(listing_file, "%04d | UNKNOWN(%d)\n", ip, cmd_num);
-            ip++;
-            continue;
-        }
-
-        fprintf(listing_file, "%04d | %-10s ", ip, cmd_info->command_name);
-
-        // если команда с аргументом — считываем следующий элемент
-        if (cmd_info->num_args == 1) {
-            int arg = (int)code->data[ip + 1];
-            fprintf(listing_file, "%-10d", arg);
-            ip += 2;
-        } else {
-            fprintf(listing_file, "%-10s", "");
-            ip++;
-        }
-
-        fprintf(listing_file, "\n");
-    }
-
-    fprintf(listing_file, "\n============================\n");
-}
-
-// void PrintReadableCode(const Stack_Info *code) {
-//     if (!code) return;
-//     printf("=== Assembled code (size = %zd) ===\n", code->size);
-//     size_t ip = 0;
-//     while (ip < code->size) {
-//         int op = (int)code->data[ip];
-//         const CommandsInfo *info = &commands[op];
-//         printf("%04zu: %3d %-8s", ip, op, info->command_name);
-//         if (info->num_args == 1) {
-//             if (ip + 1 < code->size) {
-//                 int arg = (int)code->data[ip+1];
-//                 printf(" ARG=%d", arg);
-//             } else {
-//                 printf(" ARG=MISSING");
-//             }
-//             printf("\n");
-//             ip += 2;
-//         } else {
-//             printf("\n");
-//             ip += 1;
-//         }
-//     }
-//     printf("===================================\n");
-// }

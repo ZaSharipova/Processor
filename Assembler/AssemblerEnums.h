@@ -6,6 +6,7 @@
 #include "StructsEnums.h"
 #include "SubsidiaryFunctionsAssembler.h"
 
+#define ASSEMBLY_LISTING_FILENAME "assembly.lst"
 #define ERROR_CHECK_RETURN(call) \
     err = (call); \
     if (err != kNoErrorAsm) { \

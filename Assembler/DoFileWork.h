@@ -18,11 +18,11 @@
 
 void AllBufRead(const Files *in_out_files, FileInfo *file_info);
 // void WriteCommand(FILE *output, int command, int has_arg, int arg);
-AsmError DoParse(const char *line, FileInfo *file_info, Stack_Info *buf_out, Labels *labels, ssize_t *code_size);
+AsmError DoParse(const char *line, FileInfo *file_info, Stack_Info *buf_out, Labels *labels);
 AsmError DoAsm(FileInfo *file_info, const Files *in_out_files, AssemblerInfo *Assembler);
 // void WriteCommandsOut(FILE *output, FileInfo *file_info, const Stack_Info *buf_out);
 
-AsmError PrepareToAssemble(const Files *files, FileInfo *file_info, Labels *labels);
+AsmError PrepareToAssemble(const Files *files, FileInfo *file_info, Labels *labels, ssize_t *size);
 
 AsmError PreAssemble(FileInfo *file_info, int *labels);
 

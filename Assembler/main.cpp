@@ -10,6 +10,7 @@
 #include "FileStructs.h"
 #include "AssemblerStructs.h"
 #include "SubsidiaryFunctionsAssembler.h"
+#include "AssemblerListing.h"
 
 int main(int argc, const char *argv[]) {
     Files in_out_files = {NULL, NULL, NULL, NULL};
@@ -25,7 +26,7 @@ int main(int argc, const char *argv[]) {
     FileInfo file_info = {};
 
     AsmError err = kNoAsmError;
-    CALL_CHECK_ASM_RETURN(PrepareToAssemble(&in_out_files, &file_info, &Assembler.labels));
+    CALL_CHECK_ASM_RETURN(PrepareToAssemble(&in_out_files, &file_info, &Assembler.labels, &(Assembler.data.size)));
 
     CALL_CHECK_ASM_RETURN(DoAsm(&file_info, &in_out_files, &Assembler));
 
@@ -35,8 +36,10 @@ int main(int argc, const char *argv[]) {
         return read_write_error;
     }
 
-    // PrintReadableCode(&Assembler.data);
-    // PrintAssemblerListing(stdout, &Assembler);
+
+    CALL_CHECK_IN_OUT_RETURN((ParseErr_t)PrintAllAssemblyListing(ASSEMBLY_LISTING_FILENAME, &Assembler));
+    StackDtor(&Assembler.data);
+
     CALL_CHECK_IN_OUT_RETURN(DoCloseFile(&in_out_files));
     return kNoError;
 }
