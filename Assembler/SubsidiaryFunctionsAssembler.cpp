@@ -20,6 +20,7 @@ const CommandsInfo commands[] = {
     {"MUL",   0, kMul,   sizeof("MUL") - 1},
     {"DIV",   0, kDiv,   sizeof("DIV") - 1},
     {"SQRT",  0, kSqrt,  sizeof("SQRT") - 1},
+    {"OUTC",  0, kOutC,  sizeof("OUTC") - 1},
     {"OUT",   0, kOut,   sizeof("OUT") - 1},
     {"IN",    0, kIn,    sizeof("IN") - 1},
     {"JMP",   1, kJmp,   sizeof("JMP") - 1},
@@ -31,7 +32,6 @@ const CommandsInfo commands[] = {
     {"JE",    1, kJE,    sizeof("JE") - 1},
     {"CALL",  1, kCall,  sizeof("CALL") - 1},
     {"RET",   0, kRet,   sizeof("RET") - 1},
-    {"ROUT",  0, kROut,  sizeof("ROUT") - 1},
     {NULL,    0, kCommandNotFound, 0}
 };
 

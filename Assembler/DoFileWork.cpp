@@ -223,6 +223,7 @@ static AsmError GetLabels(FileInfo *file_info, Labels *labels, ssize_t *size) {
 
         } else {
             const char *line_ptr = line->start_ptr;
+            // printf("%s %d\n", line_ptr, i);
 
             bool flag_push_stack = false;
             int args_count = 0;

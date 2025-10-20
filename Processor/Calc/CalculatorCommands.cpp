@@ -91,7 +91,7 @@ ProcessorErr_t Out_C(Processor *processor_info, FILE *open_out_file) {
 
     CHECK_PROCESSOR_RETURN((ProcessorErr_t)StackPop(&processor_info->stack, &number));
     fprintf(open_out_file, "" STACK_VALUE_MODE " \n", number);
-    printf("Answer is already in a file.\n");
+    //printf("Answer is already in a file.\n");
 
     return kProcessorSuccess;
 }
@@ -274,21 +274,19 @@ ProcessorErr_t PopM_C(Processor *processor_info) {
     return kProcessorSuccess;
 }
 
-ProcessorErr_t ROut_C(Processor *processor_info) {
+ProcessorErr_t OutC_C(FILE *open_out_file, Processor *processor_info) {
+    assert(open_out_file);
     assert(processor_info);
 
-    for (size_t i = 0; i < RAM_SIZE; i++) {
-        if (processor_info->ram[i] == 0) {
-            printf("..");
-        } else {
-            printf("++");
-        }
-        if ((i + 1) % (size_t) sqrt(RAM_SIZE) == 0)
-            printf("\n");
+    
+    processor_info->instruction_counter++;
+    Stack_t number = 0;
+    ProcessorErr_t err = kProcessorSuccess;
 
-    }
+    CHECK_PROCESSOR_RETURN((ProcessorErr_t)StackPop(&processor_info->stack, &number));
+    fprintf(open_out_file, "%c", number);
+    //printf("Answer is already in a file.\n");
 
-    processor_info->instruction_counter ++;
     return kProcessorSuccess;
 }
 

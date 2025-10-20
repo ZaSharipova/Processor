@@ -77,7 +77,7 @@ int Calculate(FILE *fout, Processor *processor_info, size_t code_size) { //
         //     }
         // }
 
-        // printf("...%d - \n", cmd);
+        // printf("...%d %d- \n", cmd, processor_info->instruction_counter);
         // for (int i = 0; i < processor_info->stack.size; i++) {
         //     printf("%d. ", processor_info->stack.data[i]);
         // }
@@ -177,8 +177,8 @@ int Calculate(FILE *fout, Processor *processor_info, size_t code_size) { //
                 CHECK_PROCESSOR_RETURN(Ret_C(processor_info));
                 break;
 
-            case(kROut):
-                CHECK_PROCESSOR_RETURN(ROut_C(processor_info));
+            case(kOutC):
+                CHECK_PROCESSOR_RETURN(OutC_C(fout, processor_info));
                 break;
 
             case (kHlt):
