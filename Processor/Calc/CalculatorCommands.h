@@ -34,6 +34,9 @@ ProcessorErr_t Ret_C(Processor *processor_info);
 ProcessorErr_t PushM_C(Processor *processor_info);
 ProcessorErr_t PopM_C(Processor *processor_info);
 
+
+ProcessorErr_t ROut_C(Processor *processor_info);
+
 ProcessorErr_t PopTwoNumbers(Processor *processor_info, Stack_t *number1, Stack_t *number2);
 void DoJump(Processor *processor_info, bool do_jump);
 

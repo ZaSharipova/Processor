@@ -11,6 +11,8 @@ const Stack_t POISON = 1e6;
 #define READ_MODE "r"
 #define WRITE_MODE "w"
 
+#define RAM_SIZE 1024
+
 enum ParseErr_t {
     kNoError      = 0,
     kErrorParsing = -1,
@@ -87,7 +89,7 @@ struct Processor {
     Stack_Info stack;
     Stack_t regs[16];
     Stack_Info call_array;
-    Stack_t ram[100];
+    Stack_t ram[RAM_SIZE];
 };
 
 struct Files {
@@ -110,7 +112,7 @@ enum ReallocMode {
     err = (call);                               \
     if (err != kNoError) {                      \
         CloseLogFile();                         \
-        return HandleCloseFile(&in_out_files);   \
+        return DoCloseFile(&in_out_files);   \
     }
 
 #endif //STRUCTS_ENUMS_H_

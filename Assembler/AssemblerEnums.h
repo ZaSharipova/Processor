@@ -6,7 +6,6 @@
 #include "StructsEnums.h"
 #include "SubsidiaryFunctionsAssembler.h"
 
-#define MAX_ARR_SIZE 20
 #define ERROR_CHECK_RETURN(call) \
     err = (call); \
     if (err != kNoErrorAsm) { \
@@ -55,47 +54,8 @@ enum Convert {
     kJNE    = 19,
     kJE     = 20,
     kCall   = 21,
-    kRet    = 22
+    kRet    = 22,
+    kROut   = 23
 };
-
-typedef struct {
-    const char *command_name;
-    size_t num_args;
-    int command_num;
-    size_t command_len;
-} CommandsInfo;
-
-extern const CommandsInfo commands[];
-
-typedef struct {
-    char *start_ptr;
-    char *end_ptr;
-    char *start_ptr_alpha;
-    char *end_ptr_alpha;
-    size_t size;
-} LineInfo;
-
-typedef struct {
-    char *buf_ptr;      
-    size_t filesize;    
-    int count_lines;    
-    LineInfo *text_ptr;
-} FileInfo;
-
-typedef struct {
-    char name[MAX_ARR_SIZE];
-    int address;
-} Label;
-
-typedef struct {
-    Label data[MAX_ARR_SIZE];
-    size_t count;
-} Labels;
-
-typedef struct {
-    Stack_Info data;
-    Labels labels[MAX_ARR_SIZE];
-    //int gotomap[MAX_ARR_SIZE];
-} AssemblerInfo;
 
 #endif //ASSEMBLER_ENUMS_H_

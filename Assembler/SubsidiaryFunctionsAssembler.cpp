@@ -5,32 +5,33 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "AssemblerEnums.h"
+#include "AssemblerStructs.h"
 
 const CommandsInfo commands[] = {
-    {"HLT",   0, kHlt, 3},
-    {"PUSHR", 1, kPushR, 5},
-    {"PUSHM", 1, kPushM, 5},
-    {"PUSH",  1, kPush, 4},
-    {"POPR",  1, kPopR, 4},
-    {"POPM",  1, kPopM, 4},
-    {"POP",   1, kPop, 3},
-    {"ADD",   0, kAdd, 3},
-    {"SUB",   0, kSub, 3},
-    {"MUL",   0, kMul, 3},
-    {"DIV",   0, kDiv, 3},
-    {"SQRT",  0, kSqrt, 4},
-    {"OUT",   0, kOut, 3},
-    {"IN",    0, kIn, 2},
-    {"JMP",   1, kJmp, 3},
-    {"JBE",   1, kJBE, 3},
-    {"JB",    1, kJB, 2},
-    {"JAE",   1, kJAE, 3},
-    {"JA",    1, kJA, 2},
-    {"JNE",   1, kJNE, 3},
-    {"JE",    1, kJE, 2},
-    {"CALL",  1, kCall, 4},
-    {"RET",   0, kRet, 3},
+    {"HLT",   0, kHlt,   sizeof("HLT") - 1},
+    {"PUSHR", 1, kPushR, sizeof("PUSHR") - 1},
+    {"PUSHM", 1, kPushM, sizeof("PUSHM") - 1},
+    {"PUSH",  1, kPush,  sizeof("PUSH") - 1},
+    {"POPR",  1, kPopR,  sizeof("POPR") - 1},
+    {"POPM",  1, kPopM,  sizeof("POPM") - 1},
+    {"POP",   1, kPop,   sizeof("POP") - 1},
+    {"ADD",   0, kAdd,   sizeof("ADD") - 1},
+    {"SUB",   0, kSub,   sizeof("SUB") - 1},
+    {"MUL",   0, kMul,   sizeof("MUL") - 1},
+    {"DIV",   0, kDiv,   sizeof("DIV") - 1},
+    {"SQRT",  0, kSqrt,  sizeof("SQRT") - 1},
+    {"OUT",   0, kOut,   sizeof("OUT") - 1},
+    {"IN",    0, kIn,    sizeof("IN") - 1},
+    {"JMP",   1, kJmp,   sizeof("JMP") - 1},
+    {"JBE",   1, kJBE,   sizeof("JBE") - 1},
+    {"JB",    1, kJB,    sizeof("JB") - 1},
+    {"JAE",   1, kJAE,   sizeof("JAE") - 1},
+    {"JA",    1, kJA,    sizeof("JA") - 1},
+    {"JNE",   1, kJNE,   sizeof("JNE") - 1},
+    {"JE",    1, kJE,    sizeof("JE") - 1},
+    {"CALL",  1, kCall,  sizeof("CALL") - 1},
+    {"RET",   0, kRet,   sizeof("RET") - 1},
+    {"ROUT",  0, kROut,  sizeof("ROUT") - 1},
     {NULL,    0, kCommandNotFound, 0}
 };
 
@@ -43,8 +44,11 @@ int CommandToEnum(const char *command) {
         }
     }
 
-    printf("12 ");
     return kCommandNotFound;
+}
+
+const char *EnumToCommand(int command_num) {
+    return commands[command_num].command_name;
 }
 
 const char *SkipWhitespace(const char *str) {

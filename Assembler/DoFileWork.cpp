@@ -14,16 +14,18 @@
 #include "AssemblerEnums.h"
 #include "SubsidiaryFunctionsAssembler.h"
 #include "StackFunctions.h"
+#include "FileStructs.h"
+#include "AssemblerStructs.h"
 #include "DoLogFile.h"
 
 #define MAX_ARG_LEN 16
-
 static AsmError GetLabels(FileInfo *file_info, Labels *labels);
-static void AddLabel(Labels *labels, const char *name, int address);
-static int FindLabel(const Labels *labels, const char *name);
+void AddLabel(Labels *labels, const char *name, int address);
+int FindLabel(const Labels *labels, const char *name);
 static void WriteCommandsOut(FILE *output, FileInfo *file_info, const Stack_Info *buf_out);
+static AsmError DoScanfAndConvert(const char *line_ptr, FileInfo *file_info, Stack_Info *buf_out, Labels *labels, bool flag_push, int *num_instructions);
 
-static void AllBufRead(const Files *in_out_files, FileInfo *file_info) { //
+void AllBufRead(const Files *in_out_files, FileInfo *file_info) {
     assert(in_out_files);
     assert(file_info);
 
@@ -38,6 +40,48 @@ static void AllBufRead(const Files *in_out_files, FileInfo *file_info) { //
     assert(file_info->text_ptr != NULL);
 
     ParseBuf(file_info);
+}
+
+AsmError PrepareToAssemble(const Files *files, FileInfo *file_info, Labels *labels) {
+    assert(file_info);
+    assert(labels);
+
+    AllBufRead(files, file_info);
+
+    // GetLabels(file_info, labels);
+    // for (int i = 0; i < 10; i++) {
+    //     printf("%s ", labels->data[i].name);
+    // }
+    // return kNoAsmError;
+    return GetLabels(file_info, labels);
+}
+
+AsmError DoAsm(FileInfo *file_info, const Files *in_out_files, AssemblerInfo *Assembler) {
+    assert(file_info);
+    assert(in_out_files);
+    assert(Assembler);
+
+    StackCtor(&Assembler->data, 1);
+
+    for (size_t i = 0; i < (size_t)file_info->count_lines; i++) {
+        LineInfo *line = &file_info->text_ptr[i];
+
+        AsmError handle_error = DoParse(line->start_ptr, file_info, &Assembler->data, &Assembler->labels, &Assembler->data.size);
+        if (handle_error < 0 && handle_error != kWhitespace) {
+            StackDtor(&(Assembler->data));
+            fprintf(GetLogFile(), "Parse error on line %lu\n", i + 1);
+            return handle_error;
+        }
+    }
+
+    WriteCommandsOut(in_out_files->open_out_file, file_info, &(Assembler->data));
+
+    StackDtor(&Assembler->data);
+
+    free(file_info->buf_ptr);
+    free(file_info->text_ptr);
+
+    return kNoAsmError;
 }
 
 static AsmError ParseArgumentValue(char *arg_str, int *out_val, Labels *labels) {
@@ -117,39 +161,78 @@ static AsmError ParseArgumentValue(char *arg_str, int *out_val, Labels *labels) 
 //     return kNoAsmError;
 // }
 
-AsmError DoParse(const char *line, FileInfo *file_info, Stack_Info *buf_out, Labels *labels) {
+static AsmError DoScanfAndConvert(const char *line_ptr, FileInfo *file_info, Stack_Info *buf_out, Labels *labels, bool flag_push, int *num_instructions) {
+    assert(line_ptr);
+    assert(file_info);
+    assert(buf_out);
+    assert(labels);
+    assert(num_instructions);
+
+    char cmd_name[MAX_ARG_LEN] = {}, 
+    arg_str[MAX_ARG_LEN] = {};
+
+    int scanf_num = 0;
+    AsmError err = kNoAsmError;
+    scanf_num = sscanf(SkipWhitespace(line_ptr), "%s", cmd_name);
+    if (scanf_num <= 0) {
+        return kErrorZeroArgs;
+    }
+
+    int command_to_enum = CommandToEnum(cmd_name);
+    if (command_to_enum == kCommandNotFound) {
+        printf("Command not found.\n");
+        return kErrorZeroArgs;
+    }
+
+    if (flag_push) {
+        CHECK_ERROR_RETURN((AsmError)StackPush(buf_out, (Stack_t)command_to_enum));
+    }
+
+    const CommandsInfo *commands_info = &commands[command_to_enum];
+    int arg_val = 0;
+
+    if (commands_info->num_args == 1) {
+        line_ptr += strlen(cmd_name);
+        scanf_num = sscanf(SkipWhitespace(line_ptr), "%s", arg_str);
+        if (scanf_num <= 0) {
+            return kErrorZeroArgs;
+        }
+
+        *num_instructions = 2;
+
+        if (!flag_push) {
+            return kNoAsmError;
+        }
+        ParseArgumentValue(arg_str, &arg_val, labels);
+
+        if (flag_push) {
+            CHECK_ERROR_RETURN((AsmError)StackPush(buf_out, arg_val));
+        }
+    }
+
+    *num_instructions = 1;
+
+    return kNoAsmError;
+}
+
+AsmError DoParse(const char *line, FileInfo *file_info, Stack_Info *buf_out, Labels *labels, ssize_t *code_size) {
     assert(line);
     assert(file_info);
     assert(buf_out);
     assert(labels);
-
-    char cmd_name[MAX_ARG_LEN] = {}, 
-    arg_str[MAX_ARG_LEN] = {};
 
     const char *line_ptr = SkipWhitespace(line);
     if (*line_ptr == '\0') {
         return kWhitespace;
     }
 
-    AsmError err = kNoAsmError;
-    sscanf(line_ptr, "%s", cmd_name);
-    int command_to_enum = CommandToEnum(cmd_name);
-    if (command_to_enum == kCommandNotFound) {
-        return kNoAvailableCommand;
+    bool flag_push_stack = true;
+    int num_instructions = 0;
+    AsmError err = DoScanfAndConvert(line_ptr, file_info, buf_out, labels, flag_push_stack, &num_instructions);
+    if (err != kNoAsmError) {
+        return err;
     }
-
-    CHECK_ERROR_RETURN((AsmError)StackPush(buf_out, (Stack_t)command_to_enum));
-    const CommandsInfo *commands_info = &commands[command_to_enum];
-    int arg_val = 0;
-
-    if (commands_info->num_args == 1) {
-        line_ptr += strlen(cmd_name);
-        sscanf(SkipWhitespace(line_ptr), "%s", arg_str);
-
-        ParseArgumentValue(arg_str, &arg_val, labels);
-        CHECK_ERROR_RETURN((AsmError)StackPush(buf_out, arg_val));
-    }
-
+    // *code_size = num_instructions;
     return kNoAsmError;
 }
 
@@ -163,45 +246,6 @@ static void WriteCommandsOut(FILE *output, FileInfo *file_info, const Stack_Info
     for (int i = 0; i < buf_out->size; i++) {
         fprintf(output, "%d ", buf_out->data[i]);
     }
-}
-
-AsmError DoAsm(FileInfo *file_info, const Files *in_out_files, Labels *labels) {
-    assert(file_info);
-    assert(in_out_files);
-    assert(labels);
-
-    // AsmError err = 0;
-    INIT_STACK(buf_out);
-    StackCtor(&buf_out, 1);
-
-    for (size_t i = 0; i < (size_t)file_info->count_lines; i++) {
-        LineInfo *line = &file_info->text_ptr[i];
-
-        AsmError handle_error = DoParse(line->start_ptr, file_info, &buf_out, labels);
-        if (handle_error < 0 && handle_error != kWhitespace) {
-            StackDtor(&buf_out);
-            fprintf(GetLogFile(), "Parse error on line %lu\n", i + 1);
-            return handle_error;
-        }
-    }
-
-    WriteCommandsOut(in_out_files->open_out_file, file_info, &buf_out);
-
-    StackDtor(&buf_out);
-
-    free(file_info->buf_ptr);
-    free(file_info->text_ptr);
-
-    return kNoAsmError;
-}
-
-AsmError PrepareToAssemble(const Files *files, FileInfo *file_info, Labels *labels) {
-    assert(file_info);
-    assert(labels);
-
-    AllBufRead(files, file_info);
-
-    return GetLabels(file_info, labels);
 }
 
 static AsmError GetLabels(FileInfo *file_info, Labels *labels) {
@@ -223,12 +267,21 @@ static AsmError GetLabels(FileInfo *file_info, Labels *labels) {
         } else {
             const char *line_ptr = line->start_ptr;
 
-            char command[MAX_ARG_LEN] = {};
-            char arg_str[MAX_ARG_LEN] = {};
+            bool flag_push_stack = false;
+            int args_count = 0;
+            AsmError scanf_err = kNoAsmError;
+            Stack_Info buf_out = {};
+            scanf_err = DoScanfAndConvert(line_ptr, file_info, &buf_out, labels, flag_push_stack, &args_count);
 
-            int args_count = sscanf(line_ptr, "%s %s", command, arg_str);
+            if (scanf_err != kNoAsmError) {
+                printf("Scanf error in %s.", line_ptr);
+                return scanf_err;
+            }
+
+
+            // int args_count = sscanf(line_ptr, "%s %s", command, arg_str);
             if (args_count == 0) {
-                printf("Error parse %s command address: %d\n", command, current_address);
+                printf("Error parse command address: %d\n", current_address);
                 return kErrorZeroArgs;
 
             } else {
@@ -240,7 +293,7 @@ static AsmError GetLabels(FileInfo *file_info, Labels *labels) {
     return kNoAsmError;
 }
 
-static void AddLabel(Labels *labels, const char *name, int address) {
+void AddLabel(Labels *labels, const char *name, int address) {
     assert(labels);
     assert(name);
 
@@ -250,12 +303,12 @@ static void AddLabel(Labels *labels, const char *name, int address) {
         }
     }
 
-    strcpy(labels->data[labels->count].name, name); //
+    strcpy(labels->data[labels->count].name, name);
     labels->data[labels->count].address = address;
     labels->count++;
 }
 
-static int FindLabel(const Labels *labels, const char *name) {
+int FindLabel(const Labels *labels, const char *name) {
     assert(labels);
     assert(name);
 
@@ -267,3 +320,76 @@ static int FindLabel(const Labels *labels, const char *name) {
 
     return -1;
 }
+
+void PrintAssemblerListing(FILE *listing_file, const AssemblerInfo *Assembler) {
+    assert(listing_file);
+    assert(Assembler);
+
+    const Stack_Info *code = &Assembler->data;
+    const Labels *labels = &Assembler->labels;
+
+    fprintf(listing_file, "==== Assembler Listing ====\n\n");
+    fprintf(listing_file, "%-8s %-10s %-10s\n", "ADDR", "COMMAND", "ARG");
+
+    int ip = 0; // instruction pointer (address)
+    printf("%d", code->size);
+    while (ip < code->size) {
+        int cmd_num = (int)code->data[ip];
+
+        // Проверяем, есть ли метка на этом адресе
+        for (size_t j = 0; j < labels->count; j++) {
+            if (labels->data[j].address == ip) {
+                fprintf(listing_file, "\n%s:\n", labels->data[j].name);
+                break;
+            }
+        }
+
+        const CommandsInfo *cmd_info = &commands[cmd_num];
+        if (!cmd_info) {
+            fprintf(listing_file, "%04d | UNKNOWN(%d)\n", ip, cmd_num);
+            ip++;
+            continue;
+        }
+
+        fprintf(listing_file, "%04d | %-10s ", ip, cmd_info->command_name);
+
+        // если команда с аргументом — считываем следующий элемент
+        if (cmd_info->num_args == 1) {
+            int arg = (int)code->data[ip + 1];
+            fprintf(listing_file, "%-10d", arg);
+            ip += 2;
+        } else {
+            fprintf(listing_file, "%-10s", "");
+            ip++;
+        }
+
+        fprintf(listing_file, "\n");
+    }
+
+    fprintf(listing_file, "\n============================\n");
+}
+
+// void PrintReadableCode(const Stack_Info *code) {
+//     if (!code) return;
+//     printf("=== Assembled code (size = %zd) ===\n", code->size);
+//     size_t ip = 0;
+//     while (ip < code->size) {
+//         int op = (int)code->data[ip];
+//         const CommandsInfo *info = &commands[op];
+//         printf("%04zu: %3d %-8s", ip, op, info->command_name);
+//         if (info->num_args == 1) {
+//             if (ip + 1 < code->size) {
+//                 int arg = (int)code->data[ip+1];
+//                 printf(" ARG=%d", arg);
+//             } else {
+//                 printf(" ARG=MISSING");
+//             }
+//             printf("\n");
+//             ip += 2;
+//         } else {
+//             printf("\n");
+//             ip += 1;
+//         }
+//     }
+//     printf("===================================\n");
+// }

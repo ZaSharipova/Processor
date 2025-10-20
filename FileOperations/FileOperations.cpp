@@ -11,7 +11,8 @@
 #include "StructsEnums.h"
 #include "FileOperations.h"
 #include "DoLogFile.h"
-#include "ParseCommandLine.h" //
+#include "ParseCommandLine.h"
+#include "FileStructs.h"
 
 static ParseErr_t OpenFileOrDefault(const char *filename, const char *mode, FILE **file_ptr, FILE *default_file);
 

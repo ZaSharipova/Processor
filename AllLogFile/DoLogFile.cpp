@@ -13,8 +13,8 @@ void SetLogFile(const char *filename) {
 
     opened_file = OpenFile(filename, WRITE_MODE);
     if (opened_file == NULL) {
-        printf("Error opening logfile, so all the mistakes will be seen in STDOUT.\n");
-        opened_file = stdout;
+        fprintf(stderr, "Error opening logfile, so all the mistakes will be seen in STDOUT.\n");
+        opened_file = stderr;
     }
 }
 

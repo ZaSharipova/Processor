@@ -3,6 +3,8 @@
 
 #include "AssemblerEnums.h"
 #include "StructsEnums.h"
+#include "FileStructs.h"
+#include "AssemblerStructs.h"
 
 size_t SizeOfFile(const char *filename);
 char *ReadToBuf(FILE *file, size_t filesize);

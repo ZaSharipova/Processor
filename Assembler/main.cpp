@@ -7,6 +7,8 @@
 #include "FileOperations.h"
 #include "ParseCommandLine.h"
 #include "DoLogFile.h"
+#include "FileStructs.h"
+#include "AssemblerStructs.h"
 #include "SubsidiaryFunctionsAssembler.h"
 
 int main(int argc, const char *argv[]) {
@@ -17,16 +19,15 @@ int main(int argc, const char *argv[]) {
     CALL_CHECK_IN_OUT_RETURN(ParseCommandLine(argv, argc, &in_out_files));
     SetLogFile(in_out_files.log_file);
     CALL_CHECK_IN_OUT_RETURN(DoOpenFile(&in_out_files));
-
-    Labels labels = {};
+    //Labels labels = {};
     //InitLabels(labels);
-    
+    AssemblerInfo Assembler = {};
     FileInfo file_info = {};
 
     AsmError err = kNoAsmError;
-    CALL_CHECK_ASM_RETURN(PrepareToAssemble(&in_out_files, &file_info, &labels));
+    CALL_CHECK_ASM_RETURN(PrepareToAssemble(&in_out_files, &file_info, &Assembler.labels));
 
-    CALL_CHECK_ASM_RETURN(DoAsm(&file_info, &in_out_files, &labels));
+    CALL_CHECK_ASM_RETURN(DoAsm(&file_info, &in_out_files, &Assembler));
 
     read_write_error = CloseLogFile();
     if (read_write_error != kNoError) {
@@ -34,6 +35,8 @@ int main(int argc, const char *argv[]) {
         return read_write_error;
     }
 
+    // PrintReadableCode(&Assembler.data);
+    // PrintAssemblerListing(stdout, &Assembler);
     CALL_CHECK_IN_OUT_RETURN(DoCloseFile(&in_out_files));
     return kNoError;
 }

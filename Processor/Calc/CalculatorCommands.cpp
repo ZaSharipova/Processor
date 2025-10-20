@@ -247,28 +247,48 @@ ProcessorErr_t PushM_C(Processor *processor_info) {
     assert(processor_info);
 
     ProcessorErr_t err = kProcessorSuccess;
+    processor_info->instruction_counter++;
 
-    Stack_t reg_index = processor_info->code[processor_info->code[processor_info->instruction_counter]];
+    Stack_t reg_index = (int)processor_info->code[processor_info->instruction_counter];
     Stack_t ram_index = processor_info->regs[reg_index];
+    CHECK_PROCESSOR_RETURN(StackErrToProcessorErr(StackPush(&processor_info->stack, processor_info->ram[ram_index])));
 
-    Stack_t value = processor_info->ram[ram_index];
-    CHECK_PROCESSOR_RETURN(StackErrToProcessorErr(StackPush(&processor_info->stack, value)));
-    processor_info->instruction_counter +=2;
+    processor_info->instruction_counter++;
     return kProcessorSuccess;
 }
 
 ProcessorErr_t PopM_C(Processor *processor_info) {
     assert(processor_info);
 
-    Stack_t number = 0;
     ProcessorErr_t err = kProcessorSuccess;
-    CHECK_PROCESSOR_RETURN(StackErrToProcessorErr(StackPop(&processor_info->stack, &number)));
-    int reg_index = processor_info->code[processor_info->instruction_counter + 1];
+    processor_info->instruction_counter++;
+
+    Stack_t reg_index = processor_info->code[processor_info->instruction_counter];
     Stack_t ram_index = processor_info->regs[reg_index];
-    processor_info->ram[ram_index] = number;
+    Stack_t value = 0;
 
-    processor_info->instruction_counter +=2;
+    CHECK_PROCESSOR_RETURN(StackErrToProcessorErr(StackPop(&processor_info->stack, &value)));
+    processor_info->ram[ram_index] = value;
 
+    processor_info->instruction_counter++;
+    return kProcessorSuccess;
+}
+
+ProcessorErr_t ROut_C(Processor *processor_info) {
+    assert(processor_info);
+
+    for (size_t i = 0; i < RAM_SIZE; i++) {
+        if (processor_info->ram[i] == 0) {
+            printf("..");
+        } else {
+            printf("++");
+        }
+        if ((i + 1) % (size_t) sqrt(RAM_SIZE) == 0)
+            printf("\n");
+
+    }
+
+    processor_info->instruction_counter ++;
     return kProcessorSuccess;
 }
 

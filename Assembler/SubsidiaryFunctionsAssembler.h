@@ -12,6 +12,7 @@
     }
 
 int CommandToEnum(const char *command);
+const char *EnumToCommand(int command_num);
 const char *SkipWhitespace(const char *str);
 int StringToInt(char *arg_str);
 

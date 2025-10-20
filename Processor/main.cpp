@@ -35,5 +35,4 @@ int main(int argc, const char *argv[]) {
     CHECK_ERROR_AND_CLOSE_FILE_RETURN(CloseLogFile());
 
     return DoCloseFile(&in_out_files);
-    
 }
