@@ -5,7 +5,6 @@
         IN
         POPR RAX
         CALL :countfact
-        PUSHR RBX
         OUT
         RET
 
@@ -14,17 +13,18 @@
         PUSH 1
         JBE :basecase
         PUSHR RAX
-        PUSHR RAX
         PUSH 1
         SUB
         POPR RAX
         CALL :countfact
-        PUSHR RBX
+        PUSHR RAX
+        PUSH 1
+        ADD
+        POPR RAX
+        PUSHR RAX
         MUL
-        POPR RBX
         RET
 
 :basecase     
         PUSH 1
-        POPR RBX
         RET
