@@ -32,7 +32,6 @@ ProcessorErr_t ProcessorCtor(Processor *processor_info, ssize_t capacity) {
     processor_info->instruction_counter = 0;
 
     StackCtor(&processor_info->call_array, capacity);
-    // processor_info->call_array = 
 
     return (ProcessorErr_t)StackCtor(&processor_info->stack, capacity);
 }
@@ -80,6 +79,7 @@ ProcessorErr_t ProcessorDtor(Processor *processor_info) {
     ProcessorErr_t err = kProcessorSuccess;
     CHECK_ERROR_RETURN(ProcessorVerify(processor_info));
 
+    StackDtor(&processor_info->call_array);
     StackDtor(&processor_info->stack);
     processor_info = NULL;
 

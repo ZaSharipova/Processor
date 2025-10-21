@@ -14,6 +14,8 @@
 #include "ParseCommandLine.h"
 #include "FileStructs.h"
 
+#define DEFAULT_COMMAND -1
+
 static ParseErr_t OpenFileOrDefault(const char *filename, const char *mode, FILE **file_ptr, FILE *default_file);
 
 size_t SizeOfFile(const char *filename) {
@@ -241,4 +243,32 @@ ParseErr_t CloseFile(FILE *file) {
     }
 
     return kNoError;
+}
+
+ProcessorErr_t Read(FILE *fin, Stack_t *code[], size_t *code_size) {
+    assert(fin);
+    assert(code);
+    assert(code_size);
+
+    Stack_t cmd = DEFAULT_COMMAND;
+    size_t pointer = 0;
+
+    fscanf(fin, "%zd", code_size);
+
+    *code = (Stack_t *) calloc (*code_size, sizeof(Stack_t));
+    if (*code == NULL) {
+        return kNoMemory;
+    }
+
+    while (pointer < *code_size && fscanf(fin, "%d", &cmd) == 1) {
+        (*code)[pointer] = cmd;
+
+        pointer++;
+    }
+    // for (size_t i = 0; i < *code_size; ++i) {
+    //     fprintf(stderr, "DEBUG code[%zu] = %d\n", i, (int)(*code)[i]);
+    // }
+
+
+    return kProcessorSuccess;
 }

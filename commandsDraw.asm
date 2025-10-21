@@ -20,6 +20,10 @@ HLT
 
     IN
     POPR RDX
+    IN
+    POPR REX
+    IN
+    POPR RFX
     CALL :checkr
     PUSHR RDX
     PUSHR RDX
@@ -59,19 +63,13 @@ HLT
 
 :check  
     PUSHR RAX
-    PUSH 16
+    PUSHR REX
     SUB
-    PUSHR RAX
-    PUSH 16
-    SUB
-    MUL
+    SQUARE
     PUSHR RBX
-    PUSH 16
+    PUSHR RFX
     SUB
-    PUSHR RBX
-    PUSH 16
-    SUB
-    MUL
+    SQUARE
     ADD
     PUSHR RDX
     JBE :do

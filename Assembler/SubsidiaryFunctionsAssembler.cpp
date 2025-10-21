@@ -33,6 +33,7 @@ const CommandsInfo commands[] = {
     {"CALL",  1, kCall,  sizeof("CALL") - 1},
     {"RET",   0, kRet,   sizeof("RET") - 1},
     {"DRAW",  0, kDraw,  sizeof("DRAW") - 1},
+    {"SQUARE", 0, kSquare, sizeof("SQUARE") - 1},
     {NULL,    0, kCommandNotFound, 0}
 };
 
@@ -65,7 +66,12 @@ const char *SkipWhitespace(const char *str) {
 int StringToInt(char *arg_str) {
     assert(arg_str);
 
-    return (int)(arg_str[1] - 'A');
+    int return_number = (int)(arg_str[1] - 'A');
+    if (return_number >= 0 && return_number < REGS_SIZE) {
+        return return_number;
+    }
+
+    return -1;
 }
 
 void InitLabels(int *labels) {

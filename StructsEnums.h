@@ -12,6 +12,7 @@ const Stack_t POISON = 1e6;
 #define WRITE_MODE "w"
 
 #define RAM_SIZE 1024
+#define REGS_SIZE 16
 
 enum ParseErr_t {
     kNoError      = 0,
@@ -87,7 +88,7 @@ struct Processor {
     size_t code_size;
     size_t instruction_counter;
     Stack_Info stack;
-    Stack_t regs[16];
+    Stack_t regs[REGS_SIZE];
     Stack_Info call_array;
     Stack_t ram[RAM_SIZE];
 };

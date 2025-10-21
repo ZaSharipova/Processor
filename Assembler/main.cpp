@@ -20,13 +20,14 @@ int main(int argc, const char *argv[]) {
     CALL_CHECK_IN_OUT_RETURN(ParseCommandLine(argv, argc, &in_out_files));
     SetLogFile(in_out_files.log_file);
     CALL_CHECK_IN_OUT_RETURN(DoOpenFile(&in_out_files));
-    //Labels labels = {};
-    //InitLabels(labels);
-    AssemblerInfo Assembler = {};
+
+    AssemblerInfo Assembler = {}; //
     FileInfo file_info = {};
 
+    AssemblerCtor(&Assembler);
+    //StackCtor(&Assembler.data, 1); //
     AsmError err = kNoAsmError;
-    CALL_CHECK_ASM_RETURN(PrepareToAssemble(&in_out_files, &file_info, &Assembler.labels, &(Assembler.data.size)));
+    CALL_CHECK_ASM_RETURN(PrepareToAssemble(&in_out_files, &file_info, &Assembler));
 
     CALL_CHECK_ASM_RETURN(DoAsm(&file_info, &in_out_files, &Assembler));
 

@@ -57,7 +57,8 @@ enum Convert {
     kJE     = 21,
     kCall   = 22,
     kRet    = 23,
-    kDraw   = 24
+    kDraw   = 24,
+    kSquare = 25
 };
 
 #endif //ASSEMBLER_ENUMS_H_

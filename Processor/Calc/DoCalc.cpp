@@ -9,6 +9,7 @@
 #include "StackFunctions.h"
 #include "ProcessorFunctions.h"
 #include "AssemblerEnums.h"
+#include "FileOperations.h"
 
 #define JB_SIGN <
 #define JBE_SIGN <=
@@ -29,34 +30,6 @@
 //         processor_info->instruction_counter += 2;                                                                     \
 //     }                                                                                                                 \
 //     getchar();
-
-ProcessorErr_t Read(FILE *fin, Stack_t *code[], size_t *code_size) {
-    assert(fin);
-    assert(code);
-    assert(code_size);
-
-    Stack_t cmd = DEFAULT_COMMAND;
-    size_t pointer = 0;
-
-    fscanf(fin, "%zd", code_size);
-
-    *code = (Stack_t *) calloc (*code_size, sizeof(Stack_t));
-    if (*code == NULL) {
-        return kNoMemory;
-    }
-
-    while (pointer < *code_size && fscanf(fin, "%d", &cmd) == 1) { // нужно ли здесь менять
-        (*code)[pointer] = cmd;
-
-        pointer++;
-    }
-    // for (size_t i = 0; i < *code_size; ++i) {
-    //     fprintf(stderr, "DEBUG code[%zu] = %d\n", i, (int)(*code)[i]);
-    // }
-
-
-    return kProcessorSuccess;
-}
 
 int Calculate(FILE *fout, Processor *processor_info, size_t code_size) { //
     assert(fout);
@@ -183,6 +156,10 @@ int Calculate(FILE *fout, Processor *processor_info, size_t code_size) { //
 
             case(kDraw):
                 CHECK_PROCESSOR_RETURN(Draw_C(processor_info));
+                break;
+
+            case(kSquare):
+                CHECK_PROCESSOR_RETURN(Square_C(processor_info));
                 break;
 
             case (kHlt):

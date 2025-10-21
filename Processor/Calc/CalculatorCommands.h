@@ -37,6 +37,8 @@ ProcessorErr_t PopM_C(Processor *processor_info);
 ProcessorErr_t Draw_C(Processor *processor_info);
 ProcessorErr_t OutC_C(FILE *open_out_file, Processor *processor_info);
 
+ProcessorErr_t Square_C(Processor *processor_info);
+
 ProcessorErr_t PopTwoNumbers(Processor *processor_info, Stack_t *number1, Stack_t *number2);
 void DoJump(Processor *processor_info, bool do_jump);
 

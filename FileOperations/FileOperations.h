@@ -20,4 +20,5 @@ ParseErr_t DoCloseFile(const Files *in_out_files); // handle
 FILE *OpenFile(const char *filename, const char *mode);
 ParseErr_t CloseFile(FILE *file);
 
+ProcessorErr_t Read(FILE *fin, Stack_t *code[], size_t *code_size);
 #endif //FILE_OPERATIONS_H_

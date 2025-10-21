@@ -283,6 +283,7 @@ ProcessorErr_t Draw_C(Processor *processor_info) {
         } else {
             printf("++");
         }
+
         if ((i + 1) % (size_t) sqrt(RAM_SIZE) == 0) {
             printf("\n");
         }
@@ -305,6 +306,19 @@ ProcessorErr_t OutC_C(FILE *open_out_file, Processor *processor_info) {
     fprintf(open_out_file, "%c", number);
     //printf("Answer is already in a file.\n");
 
+    return kProcessorSuccess;
+}
+
+ProcessorErr_t Square_C(Processor *processor_info) {
+    assert(processor_info);
+
+    ProcessorErr_t err = kProcessorSuccess;
+    Stack_t number = 0;
+    CHECK_PROCESSOR_RETURN((ProcessorErr_t)StackPop(&processor_info->stack, &number));
+
+    CHECK_PROCESSOR_RETURN((ProcessorErr_t)StackPush(&processor_info->stack, number * number));
+
+    processor_info->instruction_counter++;
     return kProcessorSuccess;
 }
 
