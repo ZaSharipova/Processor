@@ -1,25 +1,30 @@
-IN
-POPR RAX
-PUSHR RAX
-POPR RBX
-CALL :1
-OUT
-HLT
+        CALL :main
+        HLT
 
-:1
-PUSHR RAX
-PUSH 1
-JB :2  
+:main      
+        IN
+        POPR RAX
+        CALL :countfact
+        PUSHR RBX
+        OUT
+        RET
 
-PUSHR RAX
-PUSHR RAX
-PUSH 1
-SUB           
-POPR RAX
-CALL :1   
-MUL           
-RET
+:countfact     
+        PUSHR RAX
+        PUSH 1
+        JBE :basecase
+        PUSHR RAX
+        PUSHR RAX
+        PUSH 1
+        SUB
+        POPR RAX
+        CALL :countfact
+        PUSHR RBX
+        MUL
+        POPR RBX
+        RET
 
-:2
-PUSH 1
-RET
+:basecase     
+        PUSH 1
+        POPR RBX
+        RET

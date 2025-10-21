@@ -181,6 +181,10 @@ int Calculate(FILE *fout, Processor *processor_info, size_t code_size) { //
                 CHECK_PROCESSOR_RETURN(OutC_C(fout, processor_info));
                 break;
 
+            case(kDraw):
+                CHECK_PROCESSOR_RETURN(Draw_C(processor_info));
+                break;
+
             case (kHlt):
                 break;
 

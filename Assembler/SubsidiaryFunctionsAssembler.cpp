@@ -32,6 +32,7 @@ const CommandsInfo commands[] = {
     {"JE",    1, kJE,    sizeof("JE") - 1},
     {"CALL",  1, kCall,  sizeof("CALL") - 1},
     {"RET",   0, kRet,   sizeof("RET") - 1},
+    {"DRAW",  0, kDraw,  sizeof("DRAW") - 1},
     {NULL,    0, kCommandNotFound, 0}
 };
 

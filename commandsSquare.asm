@@ -1,120 +1,133 @@
-IN        ; push A
-POPR RAX
-IN        ; push B
-POPR RBX
-IN        ; push C
-POPR RCX
-CALL :nulla  ; проверяем на нулевой А
-
-PUSHR RBX ; считаем корень из дискриминанта
-PUSHR RBX
-MUL
-PUSH 1
-PUSHR RAX
-MUL
-PUSH 4
-MUL
-PUSHR RCX
-MUL
-SUB
-POPR RDX
-PUSHR RDX
-PUSH 0
-CALL :2
-PUSHR RDX
-SQRT
-
-PUSH 0    ; root1
-PUSHR RBX
-SUB
-ADD
-PUSH 2
-PUSHR RAX
-MUL
-DIV
-OUT
-PUSHR RFX
-PUSH 1
-JE :11
-
-PUSH 0    ; root2
-PUSHR RBX
-SUB
-PUSHR RDX
-SUB
-PUSH 2
-PUSHR RAX
-MUL
-DIV
-OUT
-PUSH 1
+CALL :main
 HLT
+
+:main
+    IN        ; push A
+    POPR RAX
+    IN        ; push B
+    POPR RBX
+    IN        ; push C
+    POPR RCX
+
+    CALL :nulla  ; проверяем на нулевой А
+
+    CALL :discriminant
+    CALL :findroot1
+    CALL :findroot2
+    RET
 
 :nulla
-PUSHR RAX
-PUSH 0
-JE :4
-RET
+    PUSHR RAX
+    PUSH 0
+    JE :dolinear
+    RET
 
-:2
-PUSHR RDX
-PUSH -1
-JB :3
-PUSHR RDX 
-PUSH 0
-JE :9
-PUSH 2
-OUT
-RET
+:discriminant
+    PUSHR RBX
+    PUSHR RBX
+    MUL
+    PUSH 1
+    PUSHR RAX
+    MUL
+    PUSH 4
+    MUL
+    PUSHR RCX
+    MUL
+    SUB
+    POPR RDX
+    PUSHR RDX
+    PUSH 0
+    CALL :checkdis
+    PUSHR RDX
+    SQRT
+    POPR RDX
+    PUSHR RDX
+    RET
 
-:3
-PUSH -1
-OUT
-HLT
+:findroot1
+    PUSH 0    ; root1
+    PUSHR RBX
+    SUB
+    ADD
+    PUSH 2
+    PUSHR RAX
+    MUL
+    DIV
+    OUT
+    PUSHR RFX
+    PUSH 1
+    JE :doout
+    RET
 
-:4
-PUSHR RBX
-PUSH 0
-JE :5
-PUSH 0
-PUSHR RCX
-SUB
-PUSHR RBX
+:findroot2
+    PUSH 0    ; root2
+    PUSHR RBX
+    SUB
+    PUSHR RDX
+    SUB
+    PUSH 2
+    PUSHR RAX
+    MUL
+    DIV
+    OUT
+    PUSH 1
+    RET
 
-DIV
-PUSH 1
-OUT
-OUT
-HLT
+:checkdis
+    PUSHR RDX
+    PUSH -1
+    JB :printzeroroots
+    JE :checkzerodis
+    PUSH 2
+    OUT
+    RET
 
-:5
-PUSHR RCX
-PUSH 0
-JE :7
-PUSH -1
-OUT
-HLT
-RET
+:printzeroroots
+    PUSH 0
+    OUT
+    HLT
 
-:7
-PUSH 12345678
-OUT
-HLT
+:dolinear
+    PUSHR RBX
+    PUSH 0
+    JE :checkc
+    PUSH 0
+    PUSHR RCX
+    SUB
+    PUSHR RBX
 
-:8
-PUSH 0
-OUT
-HLT
+    DIV
+    PUSH 1
+    OUT
+    OUT
+    HLT
+    RET
 
-:9
-JE :10
+:checkc
+    PUSHR RCX
+    PUSH 0
+    JE :printinfroots
+    PUSH 0
+    OUT
+    HLT
+    RET
 
-:10
-PUSH 1
-OUT
-PUSH 1
-POPR RFX
-RET
+:printinfroots
+    PUSH 12345678
+    OUT
+    HLT
 
-:11
-HLT
+:checkzerodis
+    PUSHR RDX 
+    PUSH 0
+    JE :printzerodis
+
+:printzerodis
+    PUSH 1
+    OUT
+    PUSH 1
+    POPR RFX
+    RET
+
+:doout
+    HLT
