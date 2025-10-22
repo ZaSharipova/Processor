@@ -42,10 +42,10 @@ void AllBufRead(const Files *in_out_files, FileInfo *file_info) {
     ParseBuf(file_info);
 }
 
-AsmError PrepareToAssemble(const Files *files, FileInfo *file_info, AssemblerInfo *Assembler) {
+AsmError PrepareToAssemble(const Files *files, FileInfo *file_info, AssemblerInfo *assembler) {
     assert(files);
     assert(file_info);
-    assert(Assembler);
+    assert(assembler);
 
     AllBufRead(files, file_info);
 
@@ -54,26 +54,26 @@ AsmError PrepareToAssemble(const Files *files, FileInfo *file_info, AssemblerInf
     //     printf("%s ", labels->data[i].name);
     // }
     // return kNoAsmError;
-    return GetLabels(file_info, Assembler);
+    return GetLabels(file_info, assembler);
 }
 
-AsmError DoAsm(FileInfo *file_info, const Files *in_out_files, AssemblerInfo *Assembler) {
+AsmError DoAsm(FileInfo *file_info, const Files *in_out_files, AssemblerInfo *assembler) {
     assert(file_info);
     assert(in_out_files);
-    assert(Assembler);
+    assert(assembler);
 
     for (size_t i = 0; i < (size_t)file_info->count_lines; i++) {
         LineInfo *line = &file_info->text_ptr[i];
 
-        AsmError handle_error = DoParse(line->start_ptr, file_info, Assembler);
+        AsmError handle_error = DoParse(line->start_ptr, file_info, assembler);
         if (handle_error < 0 && handle_error != kWhitespace) {
-            StackDtor(&(Assembler->data));
+            StackDtor(&(assembler->data));
             fprintf(GetLogFile(), "Parse error on line %lu\n", i + 1);
             return handle_error;
         }
     }
 
-    WriteCommandsOut(in_out_files->open_out_file, file_info, &(Assembler->data));
+    WriteCommandsOut(in_out_files->open_out_file, file_info, &(assembler->data));
 
     free(file_info->buf_ptr);
     free(file_info->text_ptr);
@@ -123,10 +123,10 @@ static AsmError ParseArgumentValue(char *arg_str, int *out_val, Labels *labels) 
     return kNoAsmError;
 }
 
-static AsmError DoScanfAndConvert(const char *line_ptr, FileInfo *file_info, AssemblerInfo *Assembler, bool flag_push, int *num_instructions) {
+static AsmError DoScanfAndConvert(const char *line_ptr, FileInfo *file_info, AssemblerInfo *assembler, bool flag_push, int *num_instructions) {
     assert(line_ptr);
     assert(file_info);
-    assert(Assembler);
+    assert(assembler);
     assert(num_instructions);
 
     char cmd_name[MAX_ARG_LEN] = {}, 
@@ -146,7 +146,7 @@ static AsmError DoScanfAndConvert(const char *line_ptr, FileInfo *file_info, Ass
     }
 
     if (flag_push) {
-        CHECK_ERROR_RETURN((AsmError)StackPush(&Assembler->data, (Stack_t)command_to_enum));
+        CHECK_ERROR_RETURN((AsmError)StackPush(&assembler->data, (Stack_t)command_to_enum));
     }
 
     const CommandsInfo *commands_info = &commands[command_to_enum];
@@ -164,10 +164,10 @@ static AsmError DoScanfAndConvert(const char *line_ptr, FileInfo *file_info, Ass
         if (!flag_push) {
             return kNoAsmError;
         }
-        ParseArgumentValue(arg_str, &arg_val, &Assembler->labels);
+        ParseArgumentValue(arg_str, &arg_val, &assembler->labels);
 
         if (flag_push) {
-            CHECK_ERROR_RETURN((AsmError)StackPush(&Assembler->data, arg_val));
+            CHECK_ERROR_RETURN((AsmError)StackPush(&assembler->data, arg_val));
         }
     }
 
@@ -176,10 +176,10 @@ static AsmError DoScanfAndConvert(const char *line_ptr, FileInfo *file_info, Ass
     return kNoAsmError;
 }
 
-AsmError DoParse(const char *line, FileInfo *file_info, AssemblerInfo *Assembler) {
+AsmError DoParse(const char *line, FileInfo *file_info, AssemblerInfo *assembler) {
     assert(line);
     assert(file_info);
-    assert(Assembler);
+    assert(assembler);
 
     const char *line_ptr = SkipWhitespace(line);
     if (*line_ptr == '\0') {
@@ -188,7 +188,7 @@ AsmError DoParse(const char *line, FileInfo *file_info, AssemblerInfo *Assembler
 
     bool flag_push_stack = true;
     int num_instructions = 0;
-    AsmError err = DoScanfAndConvert(line_ptr, file_info, Assembler, flag_push_stack, &num_instructions);
+    AsmError err = DoScanfAndConvert(line_ptr, file_info, assembler, flag_push_stack, &num_instructions);
     if (err != kNoAsmError) {
         return err;
     }
@@ -208,9 +208,9 @@ static void WriteCommandsOut(FILE *output, FileInfo *file_info, const Stack_Info
     }
 }
 
-static AsmError GetLabels(FileInfo *file_info, AssemblerInfo *Assembler) {
+static AsmError GetLabels(FileInfo *file_info, AssemblerInfo *assembler) {
     assert(file_info);
-    assert(Assembler);
+    assert(assembler);
 
     int current_address = 0;
     for (int i = 0; i < file_info->count_lines; i++) {
@@ -220,7 +220,7 @@ static AsmError GetLabels(FileInfo *file_info, AssemblerInfo *Assembler) {
 
             char *label_name = line->start_ptr + 1;
             sscanf(line->start_ptr + 1, "%s", label_name);
-            AddLabel(&Assembler->labels, label_name, current_address);
+            AddLabel(&assembler->labels, label_name, current_address);
 
             *line->start_ptr = '\0';
 
@@ -231,7 +231,7 @@ static AsmError GetLabels(FileInfo *file_info, AssemblerInfo *Assembler) {
             bool flag_push_stack = false;
             int args_count = 0;
             AsmError scanf_err = kNoAsmError;
-            scanf_err = DoScanfAndConvert(line_ptr, file_info, Assembler, flag_push_stack, &args_count);
+            scanf_err = DoScanfAndConvert(line_ptr, file_info, assembler, flag_push_stack, &args_count);
 
             if (scanf_err != kNoAsmError) {
                 printf("Scanf error in %s.", line_ptr);
@@ -281,18 +281,18 @@ int FindLabel(const Labels *labels, const char *name) {
     return -1;
 }
 
-AsmError AssemblerCtor(AssemblerInfo *Assembler) {
-    assert(Assembler);
+AsmError AssemblerCtor(AssemblerInfo *assembler) {
+    assert(assembler);
 
-    Assembler->commands_counter = 0;
+    assembler->commands_counter = 0;
 
     for (size_t i = 0; i < MAX_ARR_SIZE; i++) {
         // Assembler->labels.data[i].name[0] = "";
-        Assembler->labels.data[i].address = 0;
+        assembler->labels.data[i].address = 0;
     }
 
-    Assembler->labels.count = 0; //
-    return (AsmError)StackCtor(&Assembler->data, 1);
+    assembler->labels.count = 0; //
+    return (AsmError)StackCtor(&assembler->data, 1);
 }
 
 // AsmError AssemblerDtor(AssemblerInfo *Assembler) {

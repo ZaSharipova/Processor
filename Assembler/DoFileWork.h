@@ -20,18 +20,18 @@ AsmError AssemblerCtor(AssemblerInfo *Assembler);
 
 void AllBufRead(const Files *in_out_files, FileInfo *file_info);
 // void WriteCommand(FILE *output, int command, int has_arg, int arg);
-AsmError DoParse(const char *line, FileInfo *file_info, AssemblerInfo *Assembler);
-AsmError DoAsm(FileInfo *file_info, const Files *in_out_files, AssemblerInfo *Assembler);
+AsmError DoParse(const char *line, FileInfo *file_info, AssemblerInfo *assembler);
+AsmError DoAsm(FileInfo *file_info, const Files *in_out_files, AssemblerInfo *assembler);
 // void WriteCommandsOut(FILE *output, FileInfo *file_info, const Stack_Info *buf_out);
 
-AsmError PrepareToAssemble(const Files *files, FileInfo *file_info, AssemblerInfo *Assembler);
+AsmError PrepareToAssemble(const Files *files, FileInfo *file_info, AssemblerInfo *assembler);
 
 AsmError PreAssemble(FileInfo *file_info, int *labels);
 
 void AddLabel(Labels *labels, const char *name, int address);
 int FindLabel(const Labels *labels, const char *name);
 
-void PrintAssemblerListing(FILE *listing_file, const AssemblerInfo *Assembler);
+void PrintAssemblerListing(FILE *listing_file, const AssemblerInfo *assembler);
 void PrintReadableCode(const Stack_Info *code);
 
 #endif //HANDLE_FILE_WORK_H_

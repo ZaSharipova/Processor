@@ -27,6 +27,7 @@ typedef struct {
     size_t num_args;
     int command_num;
     size_t command_len;
+    ProcessorErr_t (*func)(Processor *);
 } CommandsInfo;
 
 extern const CommandsInfo commands[];

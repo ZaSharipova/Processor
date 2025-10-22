@@ -41,30 +41,22 @@ static void AddLabel(Labels *labels, int address) {
     labels->count++;
 }
 
-AsmError DoPrepareToDisasm(FILE *input, Labels *labels) {
+AsmError DoPrepareToDisasm(FILE *input, Labels *labels, Stack_t *code[], int code_size) {
     assert(input);
     assert(labels);
+    assert(code);
 
-    size_t instruction_num = 0;
     int command = 0, arg_int = 0;
 
-    rewind(input);
-    if (fscanf(input, "%zu", &instruction_num) != 1) {
-        return kErrorZeroArgs;
-    }
+    int instruction_counter = 0;
 
-    size_t instruction_counter = 0;
-
-    while (instruction_counter < instruction_num) {
-        if (fscanf(input, "%d", &command) != 1)
-            return kErrorZeroArgs;
+    while (instruction_counter < code_size) {
+        command = (*code)[instruction_counter];
 
         instruction_counter++;
 
         if (commands[command].num_args == 1) {
-            if (fscanf(input, "%d", &arg_int) != 1) {
-                return kErrorZeroArgs;
-            }
+            arg_int = (*code)[instruction_counter];
 
             instruction_counter++;
 
@@ -74,34 +66,27 @@ AsmError DoPrepareToDisasm(FILE *input, Labels *labels) {
         }
     }
 
-    rewind(input);
     return kNoAsmError;
 }
 
-AsmError WriteCommandsBack(FILE *output, FILE *input, const Labels *labels) {
+AsmError WriteCommandsBack(FILE *output, FILE *input, const Labels *labels, Stack_t *code[], int code_size) {
     assert(output);
     assert(input);
     assert(labels);
+    assert(code);
 
     int command = 0, arg = 0;
-    size_t instruction_num = 0;
-    size_t instruction_counter = 0;
+    int instruction_counter = 0;
 
-    fscanf(input, "%zu", &instruction_num);
-
-    while (instruction_counter < instruction_num) {
-        size_t cur_pos = instruction_counter;
+    while (instruction_counter < code_size) {
+        int cur_pos = instruction_counter;
 
         const char *label = FindLabelByAddr(labels, (int)cur_pos);
         if (label && cur_pos != 0) {
             fprintf(output, ":%s\n", label);
         }
 
-        if (fscanf(input, "%d", &command) != 1) {
-            return kErrorZeroArgs;
-        }
-
-        instruction_counter++;
+        command = (*code)[instruction_counter++];
 
         const char *command_str = EnumToCommand(command);
         if (!command_str) {
@@ -112,11 +97,7 @@ AsmError WriteCommandsBack(FILE *output, FILE *input, const Labels *labels) {
         fprintf(output, "%s", command_str);
 
         if (commands[command].num_args == 1) {
-            if (fscanf(input, "%d", &arg) != 1) {
-                return kErrorZeroArgs;
-            }
-
-            instruction_counter++;
+            arg = (*code)[instruction_counter++];
 
             if (command == kPushR || command == kPopR) {
                 fprintf(output, " R%cX", (char)(arg + 'A'));
@@ -144,14 +125,15 @@ AsmError WriteCommandsBack(FILE *output, FILE *input, const Labels *labels) {
     return kNoAsmError;
 }
 
-AsmError DoDisAsm(FileInfo *file_info, const Files *in_out_files) {
+AsmError DoDisAsm(FileInfo *file_info, const Files *in_out_files, Stack_t *code[], int code_size) {
     assert(file_info);
     assert(in_out_files);
+    assert(code);
 
     Labels labels = {};
     AsmError err = kNoAsmError;
 
-    CHECK_ERROR_RETURN(DoPrepareToDisasm(in_out_files->open_in_file, &labels));
+    CHECK_ERROR_RETURN(DoPrepareToDisasm(in_out_files->open_in_file, &labels, code, code_size));
 
-    return WriteCommandsBack(in_out_files->open_out_file, in_out_files->open_in_file, &labels);
+    return WriteCommandsBack(in_out_files->open_out_file, in_out_files->open_in_file, &labels, code, code_size);
 }

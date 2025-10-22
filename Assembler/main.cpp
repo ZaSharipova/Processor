@@ -25,8 +25,8 @@ int main(int argc, const char *argv[]) {
     FileInfo file_info = {};
 
     AssemblerCtor(&Assembler);
-    //StackCtor(&Assembler.data, 1); //
     AsmError err = kNoAsmError;
+    
     CALL_CHECK_ASM_RETURN(PrepareToAssemble(&in_out_files, &file_info, &Assembler));
 
     CALL_CHECK_ASM_RETURN(DoAsm(&file_info, &in_out_files, &Assembler));

@@ -13,9 +13,9 @@
 // int DoDisAsm(FileInfo *file_info, const Files *in_out_files) ;
 
 
-AsmError DoPrepareToDisasm(FILE *input, Labels *labels);
-AsmError WriteCommandsBack(FILE *output, FILE *input, const Labels *labels);
-AsmError DoDisAsm(FileInfo *file_info, const Files *in_out_files) ;
+AsmError DoPrepareToDisasm(FILE *input, Labels *labels, Stack_t *code[], int code_size);
+AsmError WriteCommandsBack(FILE *output, FILE *input, const Labels *labels, Stack_t *code[], int code_size);
+AsmError DoDisAsm(FileInfo *file_info, const Files *in_out_files, Stack_t *code[], int code_size);
 
 // PossibleErrorsAsm HandleBufRead(Files in_out_files, FileInfo *file_info);
 
