@@ -29,11 +29,11 @@ int Calculate(FILE *fout, Processor *processor_info, size_t code_size) {
 
     int cmd = DEFAULT_COMMAND;
 
-    // win = GraphicsInit();
-    // if (!win) {
-    //     fprintf(stderr, "Error: failed to initialize ncurses window\n");
-    //     return kProcessorFailure;
-    // }
+    win = GraphicsInit();
+    if (!win) {
+        fprintf(stderr, "Error: failed to initialize ncurses window\n");
+        return kProcessorFailure;
+    }
 
     while (processor_info->instruction_counter < code_size && cmd != kHlt) {
         cmd = processor_info->code[processor_info->instruction_counter];
@@ -48,6 +48,6 @@ int Calculate(FILE *fout, Processor *processor_info, size_t code_size) {
     }
 
     // endwin();
-    // GraphicsDestroy(&win);
+    GraphicsDestroy(&win);
     return kProcessorSuccess;
 }

@@ -28,7 +28,12 @@ typedef struct {
     int command_num;
     size_t command_len;
     TypeOfArg type_of_arg;
+#ifdef _Assembler
     uint32_t hash;
+#endif
+#ifdef _Processor
+    ProcessorErr_t (*func)(Processor *);
+#endif
 } CommandsInfo;
 
 extern CommandsInfo commands[];

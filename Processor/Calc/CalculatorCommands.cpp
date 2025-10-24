@@ -56,7 +56,7 @@ GENERATE_ARIPHM_FUNC(Div, /);
         CHECK_PROCESSOR_RETURN(StackErrToProcessorErr(StackPop(&processor_info->stack, &number1)));                      \
                                                                                                                          \
         if (number1 op number2) {                                                                                        \
-            processor_info->instruction_counter = (size_t)processor_info->code[processor_info->instruction_counter + 1]; \   
+            processor_info->instruction_counter = (size_t)processor_info->code[processor_info->instruction_counter + 1]; \
         } else {                                                                                                         \
             processor_info->instruction_counter += 2;                                                                    \
         }                                                                                                                \
@@ -269,7 +269,7 @@ ProcessorErr_t Draw_C(Processor *processor_info) {
 
     for (int y = 0; y < 144; y++) {
         for (int x = 0; x < 192; x++) {
-            size_t pos = y * 192 + x;
+            size_t pos = (size_t)(y * 192 + x);
             char pixel = (processor_info->ram[pos] == 0) ? ' ' : '#';
             mvwaddch(win, y, x * 2, pixel);
             mvwaddch(win, y, x * 2 + 1, pixel);
@@ -324,6 +324,7 @@ ProcessorErr_t Pause_C(Processor *processor_info) {
 
     wrefresh(win);
     wgetch(win);
+    processor_info->instruction_counter++;
 
     return kProcessorSuccess;
 }
