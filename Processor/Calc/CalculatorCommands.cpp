@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <limits.h>
+#include <ncurses.h>
 
 #include "StructsEnums.h"
 #include "StackFunctions.h"
@@ -11,6 +12,7 @@
 #include "ProcessorFunctions.h"
 #include "DoLogFile.h"
 
+extern WINDOW *win;
 static double SqrtFind(Stack_t n);
 
 #define PRINT_DOCALC_ERROR(operation) fprintf(GetLogFile(), "Error: %s failed.\n", #operation); //
@@ -263,16 +265,20 @@ ProcessorErr_t PopM_C(Processor *processor_info) {
 ProcessorErr_t Draw_C(Processor *processor_info) {
     assert(processor_info);
 
-    for (size_t i = 0; i < RAM_SIZE; i++) {
-        if (processor_info->ram[i] == 0) {
-            printf("..");
-        } else {
-            printf("++");
-        }
+    werase(win);
 
-        if ((i + 1) % (size_t) sqrt(RAM_SIZE) == 0) {
-            printf("\n");
+    for (int y = 0; y < 144; y++) {
+        for (int x = 0; x < 192; x++) {
+            size_t pos = y * 192 + x;
+            char pixel = (processor_info->ram[pos] == 0) ? ' ' : '#';
+            mvwaddch(win, y, x * 2, pixel);
+            mvwaddch(win, y, x * 2 + 1, pixel);
         }
+    }
+
+    wrefresh(win);
+    for (volatile size_t i = 0; i < (size_t)(7 * 1e7); i++) {
+        ;
     }
 
     processor_info->instruction_counter ++;
@@ -309,6 +315,15 @@ ProcessorErr_t Square_C(Processor *processor_info) {
 
 ProcessorErr_t Hlt_C(Processor *processor_info) {
     assert(processor_info);
+
+    return kProcessorSuccess;
+}
+
+ProcessorErr_t Pause_C(Processor *processor_info) {
+    assert(processor_info);
+
+    wrefresh(win);
+    wgetch(win);
 
     return kProcessorSuccess;
 }

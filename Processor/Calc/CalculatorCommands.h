@@ -46,6 +46,8 @@ ProcessorErr_t Hlt_C(Processor *processor_info);
 
 ProcessorErr_t Jmp_C(Processor *processor_info);
 
+ProcessorErr_t Pause_C(Processor *processor_info);
+
 ProcessorErr_t Add_C(Processor *processor_info);
 ProcessorErr_t Sub_C(Processor *processor_info);
 ProcessorErr_t Mul_C(Processor *processor_info);

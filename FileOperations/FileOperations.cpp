@@ -81,7 +81,7 @@ void ParseBuf(FileInfo *file_info) {
     char *line_start = file_info->buf_ptr;
     size_t bufsize = file_info->filesize + 1;
 
-    for (size_t i = 0; i <= bufsize; i++) {
+    for (size_t i = 0; i < bufsize; i++) {
         char c = file_info->buf_ptr[i];
         int end_of_buffer = (i == bufsize);
         int end_of_line = (c == '\n' || end_of_buffer);
@@ -93,10 +93,15 @@ void ParseBuf(FileInfo *file_info) {
                 char *ptr = line_start;
                 while (isspace((unsigned char)*ptr)) ptr++;
 
-                char *semicolon_is = strchr(ptr, ';');
-                if (semicolon_is) {
-                    *semicolon_is = '\0';
-                }
+                // while ((ptr = strchr(ptr, ';') ) != NULL) {
+                //     *ptr = '\0';
+                //     ptr++;
+                // }
+                // char *semicolon_is = strchr(ptr, ';');
+                // if (semicolon_is) {
+                //      *semicolon_is = '\0';
+                //     ptr = semicolon_is + 1;
+                // }
 
                 if (*ptr != '\0') {
                     file_info->text_ptr[line_idx].start_ptr = line_start;

@@ -11,14 +11,19 @@
 #include "AssemblerStructs.h"
 #include "SubsidiaryFunctionsAssembler.h"
 #include "AssemblerListing.h"
+#include "Hash.h"
 
 int main(int argc, const char *argv[]) {
+
     Files in_out_files = {NULL, NULL, NULL, NULL};
 
     ParseErr_t read_write_error = kNoError;
 
     CALL_CHECK_IN_OUT_RETURN(ParseCommandLine(argv, argc, &in_out_files));
     SetLogFile(in_out_files.log_file);
+
+    CALL_CHECK_IN_OUT_RETURN((ParseErr_t)DoHash());
+
     CALL_CHECK_IN_OUT_RETURN(DoOpenFile(&in_out_files));
 
     AssemblerInfo Assembler = {}; //
@@ -38,7 +43,7 @@ int main(int argc, const char *argv[]) {
     }
 
 
-    CALL_CHECK_IN_OUT_RETURN((ParseErr_t)PrintAllAssemblyListing(ASSEMBLY_LISTING_FILENAME, &Assembler));
+    //CALL_CHECK_IN_OUT_RETURN((ParseErr_t)PrintAllAssemblyListing(ASSEMBLY_LISTING_FILENAME, &Assembler));
     StackDtor(&Assembler.data);
 
     CALL_CHECK_IN_OUT_RETURN(DoCloseFile(&in_out_files));

@@ -57,7 +57,16 @@ enum Convert {
     kCall   = 21,
     kRet    = 22,
     kDraw   = 23,
-    kSquare = 24
+    kSquare = 24,
+    kPause  = 25
+};
+
+enum TypeOfArg {
+    kIntArg = 0,
+    kRamArg = 1,
+    kRaxArg = 2,
+    kNoArg  = 3,
+    kLabelArg = 4,
 };
 
 #endif //ASSEMBLER_ENUMS_H_

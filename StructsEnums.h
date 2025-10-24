@@ -11,7 +11,7 @@ const Stack_t POISON = 1e6;
 #define READ_MODE "r"
 #define WRITE_MODE "w"
 
-#define RAM_SIZE 1024
+#define RAM_SIZE 144 * 192
 #define REGS_SIZE 16
 
 enum ParseErr_t {

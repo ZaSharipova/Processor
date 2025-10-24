@@ -24,6 +24,11 @@ void AddLabel(Labels *labels, const char *name, int address);
 int FindLabel(const Labels *labels, const char *name);
 static void WriteCommandsOut(FILE *output, FileInfo *file_info, const Stack_Info *buf_out);
 static AsmError DoScanfAndConvert(const char *line_ptr, FileInfo *file_info, AssemblerInfo *Assembler, bool flag_push, int *num_instructions);
+static AsmError ParseLabelArgument(const char *arg_str, int *out_val, Labels *labels, bool do_parse);
+
+static AsmError DoScanfAndConvert(const char *line_ptr, FileInfo *file_info, AssemblerInfo *assembler, bool flag_push, int *num_instructions);
+static AsmError GetLabels(FileInfo *file_info, AssemblerInfo *assembler);
+AsmError DoParse(const char *line, FileInfo *file_info, AssemblerInfo *assembler);
 
 void AllBufRead(const Files *in_out_files, FileInfo *file_info) {
     assert(in_out_files);
@@ -62,12 +67,15 @@ AsmError DoAsm(FileInfo *file_info, const Files *in_out_files, AssemblerInfo *as
     assert(in_out_files);
     assert(assembler);
 
+    // AllBufRead(in_out_files, file_info);
+
     for (size_t i = 0; i < (size_t)file_info->count_lines; i++) {
         LineInfo *line = &file_info->text_ptr[i];
 
         AsmError handle_error = DoParse(line->start_ptr, file_info, assembler);
         if (handle_error < 0 && handle_error != kWhitespace) {
             StackDtor(&(assembler->data));
+            // printf("%s %d", line->start_ptr, i);
             fprintf(GetLogFile(), "Parse error on line %lu\n", i + 1);
             return handle_error;
         }
@@ -81,44 +89,93 @@ AsmError DoAsm(FileInfo *file_info, const Files *in_out_files, AssemblerInfo *as
     return kNoAsmError;
 }
 
-static AsmError ParseArgumentValue(char *arg_str, int *out_val, Labels *labels) {
-    assert(arg_str);
+static AsmError ParseLabelArgument(const char *line_ptr, int *out_val, Labels *labels, bool do_parse) {
+    assert(line_ptr);
     assert(out_val);
     assert(labels);
 
-    if (*arg_str == ':') {
-        arg_str++;
+    char arg_str[MAX_ARG_LEN] = {}; // статический буфер под строку аргумента
+    if (sscanf(SkipWhitespace(line_ptr), "%s", arg_str) != 1) {
+        fprintf(stderr, "Error: failed to read label argument\n");
+        return kErrorParsingAsm;
+    }
 
-        int address = FindLabel(labels, arg_str);
+    if (do_parse && arg_str[0] == ':') {
+        const char *label_name = arg_str + 1;
+        int address = FindLabel(labels, label_name);
         if (address == -1) {
-            fprintf(stderr, "Error: label '%s' not found!\n", arg_str);
+            fprintf(stderr, "Error: label '%s' not found!\n", label_name);
             return kErrorParsingAsm;
         }
 
         *out_val = address;
         return kNoAsmError;
+    } else if (do_parse){
+        fprintf(stderr, "Error: expected ':' before label name: %s\n", arg_str);
+        return kErrorParsingAsm;
     }
+    return kNoAsmError;
+}
 
-    char *end_ptr = NULL;
-    long val = strtol(arg_str, &end_ptr, 0);
-    if (end_ptr != arg_str && *end_ptr == '\0') {
-        *out_val = (int)val;
-        return kNoAsmError;
-    }
 
-    if (*arg_str == '[') {
-        arg_str++;
-        if (arg_str[3] != ']') {
+static AsmError ParseRValue(TypeOfArg arg_type, const char *line_ptr, int *out_val) {
+    assert(line_ptr);
+    assert(out_val);
+
+    char arg_str[MAX_ARG_LEN] = {};
+
+    int sscanf_err = sscanf(SkipWhitespace(line_ptr), "%s", arg_str);
+
+    char *ptr = arg_str;
+    if (arg_type == kRamArg && *arg_str == '[') {
+        ptr++;
+        if (ptr[3] != ']') {
             fprintf(stderr, "Error with brackets while parsing Assembler commands: there is no closing \']\' .");
             return kErrorParsingAsm;
         }
+
+    } else if (arg_type == kRamArg) {
+        fprintf(stderr, "Error with brackets while parsing Assembler commands: there is no opening \'[\' .");
+        return kErrorParsingAsm;
     }
 
-    int to_int_result =  StringToInt(arg_str);
+    int to_int_result =  StringToInt(ptr);
     if (to_int_result < 0) {
         return kErrorParsingAsm;
     }
     *out_val = to_int_result;
+
+    return kNoAsmError;
+
+}
+
+static AsmError ParseArgumentValue(AssemblerInfo *assembler, TypeOfArg arg_type, const char *line_ptr, int *out_val, bool do_parse) {
+    assert(assembler);
+    assert(line_ptr);
+    assert(out_val);
+
+    int sscanf_err = 0;
+    
+    switch (arg_type) {
+        case (kRamArg):
+        case (kRaxArg):
+            ParseRValue(arg_type, line_ptr, out_val);
+            break;
+
+        case (kIntArg):
+            sscanf_err = sscanf(SkipWhitespace(line_ptr), "%d", out_val);
+            break;
+
+        case (kLabelArg):
+            ParseLabelArgument(line_ptr, out_val, &assembler->labels, do_parse);
+            break;
+
+        case (kNoArg):
+            break;
+
+        default:
+            printf("Error, no such command.");
+    }
 
     return kNoAsmError;
 }
@@ -132,49 +189,76 @@ static AsmError DoScanfAndConvert(const char *line_ptr, FileInfo *file_info, Ass
     char cmd_name[MAX_ARG_LEN] = {}, 
     arg_str[MAX_ARG_LEN] = {};
 
+    line_ptr = SkipWhitespace(line_ptr);
     int scanf_num = 0;
     AsmError err = kNoAsmError;
-    scanf_num = sscanf(SkipWhitespace(line_ptr), "%s", cmd_name);
+    int bytes_count = 0;
+    scanf_num = sscanf(line_ptr, "%s", cmd_name);
+    // printf("%s ", cmd_name);
     if (scanf_num <= 0) {
         return kErrorZeroArgs;
     }
 
-    int command_to_enum = CommandToEnum(cmd_name);
-    if (command_to_enum == kCommandNotFound) {
+    char *ptr = (char *)SkipWhitespace(line_ptr + strlen(cmd_name));
+   
+    int command_to_enum_pos = CommandToEnumPos(cmd_name);
+
+    if (command_to_enum_pos == kCommandNotFound) {
         printf("Command not found.\n");
         return kErrorZeroArgs;
     }
 
     if (flag_push) {
-        CHECK_ERROR_RETURN((AsmError)StackPush(&assembler->data, (Stack_t)command_to_enum));
+        CHECK_ERROR_RETURN((AsmError)StackPush(&assembler->data, (Stack_t)commands[command_to_enum_pos].command_num));
     }
 
-    const CommandsInfo *commands_info = &commands[command_to_enum];
+    const CommandsInfo *commands_info = &commands[command_to_enum_pos];
     int arg_val = 0;
 
-    if (commands_info->num_args == 1) {
-        line_ptr += strlen(cmd_name);
-        scanf_num = sscanf(SkipWhitespace(line_ptr), "%s", arg_str);
-        if (scanf_num <= 0) {
-            return kErrorZeroArgs;
-        }
+    int out_val = 0;
 
+    switch(commands_info->num_args) {
+    case (0):
+        *num_instructions = 1;
+        break;
+    
+    case(1):
+        ParseArgumentValue(assembler, (commands_info->type_of_arg), ptr, &out_val, flag_push);
         *num_instructions = 2;
 
-        if (!flag_push) {
-            return kNoAsmError;
-        }
-        ParseArgumentValue(arg_str, &arg_val, &assembler->labels);
-
         if (flag_push) {
-            CHECK_ERROR_RETURN((AsmError)StackPush(&assembler->data, arg_val));
+            CHECK_ERROR_RETURN((AsmError)StackPush(&assembler->data, out_val));
         }
-    }
+        break;
 
-    *num_instructions = 1;
+    default:
+        break;
+    }
 
     return kNoAsmError;
 }
+
+// AsmError DoScanfArg(const char *line_ptr, CommandsInfo *commands_info, AssemblerInfo *assembler, bool flag_push, int *num_instructions) {
+//     assert(line_ptr);
+//     assert(commands_info);
+//     assert(assembler);
+//     assert(num_instructions);
+
+//     int arg_int = 0;
+//     switch(commands_info->type_of_arg) {
+//         case (kIntArg): {
+//             int scanf_num = sscanf(SkipWhitespace(line_ptr), "%d", &arg_int);
+//             if (scanf_num <= 0) {
+//                 return kErrorZeroArgs;
+//             }
+//         }
+//         case (kRamArg):
+//         case (kRaxArg):
+
+//         case (kLabelArg):
+
+//     }
+// }
 
 AsmError DoParse(const char *line, FileInfo *file_info, AssemblerInfo *assembler) {
     assert(line);
@@ -190,10 +274,17 @@ AsmError DoParse(const char *line, FileInfo *file_info, AssemblerInfo *assembler
     int num_instructions = 0;
     AsmError err = DoScanfAndConvert(line_ptr, file_info, assembler, flag_push_stack, &num_instructions);
     if (err != kNoAsmError) {
+            //printf("\n %s ", line_ptr);
         return err;
     }
     // *code_size = num_instructions;
     return kNoAsmError;
+}
+
+Stack_t GetStackElem(const Stack_Info *buf_out, size_t pos) {
+    assert(buf_out);
+
+    return buf_out->data[pos];
 }
 
 static void WriteCommandsOut(FILE *output, FileInfo *file_info, const Stack_Info *buf_out) {
@@ -203,8 +294,8 @@ static void WriteCommandsOut(FILE *output, FileInfo *file_info, const Stack_Info
 
     fprintf(output, "%zd ", buf_out->size);
     //getelem
-    for (int i = 0; i < buf_out->size; i++) {
-        fprintf(output, "%d ", buf_out->data[i]);
+    for (size_t i = 0; i < (size_t)buf_out->size; i++) {
+        fprintf(output, "%d ", GetStackElem(buf_out, i));
     }
 }
 
@@ -232,6 +323,7 @@ static AsmError GetLabels(FileInfo *file_info, AssemblerInfo *assembler) {
             int args_count = 0;
             AsmError scanf_err = kNoAsmError;
             scanf_err = DoScanfAndConvert(line_ptr, file_info, assembler, flag_push_stack, &args_count);
+            //printf("%d ", args_count);
 
             if (scanf_err != kNoAsmError) {
                 printf("Scanf error in %s.", line_ptr);
@@ -289,6 +381,7 @@ AsmError AssemblerCtor(AssemblerInfo *assembler) {
     for (size_t i = 0; i < MAX_ARR_SIZE; i++) {
         // Assembler->labels.data[i].name[0] = "";
         assembler->labels.data[i].address = 0;
+        assembler->labels.data[i].name[0] = '\0';
     }
 
     assembler->labels.count = 0; //
