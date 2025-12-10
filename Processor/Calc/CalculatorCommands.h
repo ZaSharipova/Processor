@@ -60,4 +60,6 @@ ProcessorErr_t C_JAE(Processor *processor_info);
 ProcessorErr_t C_JE(Processor *processor_info);
 ProcessorErr_t C_JNE(Processor *processor_info);
 
+ProcessorErr_t PushMN_C(Processor *processor_info);
+ProcessorErr_t PopMN_C(Processor *processor_info);
 #endif

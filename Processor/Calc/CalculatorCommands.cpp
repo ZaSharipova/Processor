@@ -147,6 +147,7 @@ ProcessorErr_t PushR_C(Processor *processor_info) {
 
     if (processor_info->instruction_counter + 1 < processor_info->code_size) {
             int reg_code = processor_info->code[processor_info->instruction_counter + 1];
+            //fprintf(stderr, "AA%d", reg_code);
             Stack_t number = processor_info->regs[reg_code];
 
             StackErr_t err = StackPush(&processor_info->stack, number);
@@ -231,6 +232,19 @@ ProcessorErr_t Ret_C(Processor *processor_info) {
     return kProcessorSuccess;
 }
 
+ProcessorErr_t PushMN_C(Processor *processor_info) {
+    assert(processor_info);
+    
+    ProcessorErr_t err = kProcessorSuccess;
+    processor_info->instruction_counter++;
+
+    Stack_t ram_index = processor_info->code[processor_info->instruction_counter];
+    CHECK_PROCESSOR_RETURN(StackErrToProcessorErr(StackPush(&processor_info->stack, processor_info->ram[ram_index])));
+
+    processor_info->instruction_counter++;
+    return kProcessorSuccess;
+}
+
 ProcessorErr_t PushM_C(Processor *processor_info) {
     assert(processor_info);
 
@@ -240,6 +254,21 @@ ProcessorErr_t PushM_C(Processor *processor_info) {
     Stack_t reg_index = (int)processor_info->code[processor_info->instruction_counter];
     Stack_t ram_index = processor_info->regs[reg_index];
     CHECK_PROCESSOR_RETURN(StackErrToProcessorErr(StackPush(&processor_info->stack, processor_info->ram[ram_index])));
+
+    processor_info->instruction_counter++;
+    return kProcessorSuccess;
+}
+
+ProcessorErr_t PopMN_C(Processor *processor_info) {
+    assert(processor_info);
+
+    ProcessorErr_t err = kProcessorSuccess;
+    processor_info->instruction_counter++;
+    Stack_t ram_index = processor_info->code[processor_info->instruction_counter];
+
+    Stack_t value = 0;
+    CHECK_PROCESSOR_RETURN(StackErrToProcessorErr(StackPop(&processor_info->stack, &value)));
+    processor_info->ram[ram_index] = value;
 
     processor_info->instruction_counter++;
     return kProcessorSuccess;

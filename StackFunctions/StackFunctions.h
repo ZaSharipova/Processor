@@ -20,6 +20,7 @@
 #define CHECK_ERROR_RETURN(call) \
     err = (call); \
     if (err != 0) { \
+        fprintf(stderr, "error"); \
         return err; \
     }
 

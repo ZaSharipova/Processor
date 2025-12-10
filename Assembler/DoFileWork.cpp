@@ -17,6 +17,7 @@
 #include "FileStructs.h"
 #include "AssemblerStructs.h"
 #include "DoLogFile.h"
+#include "Commands.h"
 
 #define MAX_ARG_LEN 16
 static AsmError GetLabels(FileInfo *file_info, AssemblerInfo *Assembler);
@@ -94,7 +95,7 @@ static AsmError ParseLabelArgument(const char *line_ptr, int *out_val, Labels *l
     assert(out_val);
     assert(labels);
 
-    char arg_str[MAX_ARG_LEN] = {}; // статический буфер под строку аргумента
+    char arg_str[MAX_ARG_LEN] = {};
     if (sscanf(SkipWhitespace(line_ptr), "%s", arg_str) != 1) {
         fprintf(stderr, "Error: failed to read label argument\n");
         return kErrorParsingAsm;
@@ -125,18 +126,30 @@ static AsmError ParseRValue(TypeOfArg arg_type, const char *line_ptr, int *out_v
     char arg_str[MAX_ARG_LEN] = {};
 
     int sscanf_err = sscanf(SkipWhitespace(line_ptr), "%s", arg_str);
+    if (sscanf_err <= 0) {
+        fprintf(stderr, "Error parsing commands.\n");
+        return kErrorParsingAsm;
+    }
 
     char *ptr = arg_str;
-    if (arg_type == kRamArg && *arg_str == '[') {
-        ptr++;
-        if (ptr[3] != ']') {
-            fprintf(stderr, "Error with brackets while parsing Assembler commands: there is no closing \']\' .");
-            return kErrorParsingAsm;
-        }
-
-    } else if (arg_type == kRamArg) {
-        fprintf(stderr, "Error with brackets while parsing Assembler commands: there is no opening \'[\' .");
+    if (arg_type == kRamArg && (arg_str[0] != '[' || arg_str[strlen(arg_str) - 1] != ']')) {
+        fprintf(stderr, "Error: memory argument must be in brackets, got '%s'\n", arg_str);
         return kErrorParsingAsm;
+    }
+    if (arg_type == kRamArg) {
+        char inner[32] = "";
+        size_t arg_len = strlen(arg_str);
+        strncpy(inner, arg_str + 1, arg_len - 2);
+        inner[arg_len - 2] = '\0';
+
+        char *endptr = NULL;
+        long address = strtol(inner, &endptr, 10);
+
+        if (*endptr == '\0') {
+            *out_val = (int)address;
+            return kNoAsmError;
+
+        }
     }
 
     int to_int_result =  StringToInt(ptr);
@@ -153,9 +166,9 @@ static AsmError ParseArgumentValue(AssemblerInfo *assembler, TypeOfArg arg_type,
     assert(assembler);
     assert(line_ptr);
     assert(out_val);
-
-    int sscanf_err = 0;
     
+    int sscanf_err = kNoAsmError;
+
     switch (arg_type) {
         case (kRamArg):
         case (kRaxArg):
@@ -164,6 +177,9 @@ static AsmError ParseArgumentValue(AssemblerInfo *assembler, TypeOfArg arg_type,
 
         case (kIntArg):
             sscanf_err = sscanf(SkipWhitespace(line_ptr), "%d", out_val);
+            if (sscanf_err <= 0) {
+                return kErrorParsingAsm;
+            }
             break;
 
         case (kLabelArg):
@@ -192,7 +208,6 @@ static AsmError DoScanfAndConvert(const char *line_ptr, FileInfo *file_info, Ass
     line_ptr = SkipWhitespace(line_ptr);
     int scanf_num = 0;
     AsmError err = kNoAsmError;
-    int bytes_count = 0;
     scanf_num = sscanf(line_ptr, "%s", cmd_name);
     // printf("%s ", cmd_name);
     if (scanf_num <= 0) {
@@ -203,7 +218,7 @@ static AsmError DoScanfAndConvert(const char *line_ptr, FileInfo *file_info, Ass
    
     int command_to_enum_pos = CommandToEnumPos(cmd_name);
 
-    if (command_to_enum_pos == kCommandNotFound) {
+    if (command_to_enum_pos == -1) {
         printf("Command not found.\n");
         return kErrorZeroArgs;
     }
@@ -213,7 +228,6 @@ static AsmError DoScanfAndConvert(const char *line_ptr, FileInfo *file_info, Ass
     }
 
     const CommandsInfo *commands_info = &commands[command_to_enum_pos];
-    int arg_val = 0;
 
     int out_val = 0;
 
