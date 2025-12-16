@@ -35,8 +35,10 @@ int Calculate(FILE *fout, Processor *processor_info, size_t code_size) {
 
     while (processor_info->instruction_counter < code_size && cmd != kHlt) {
         cmd = processor_info->code[processor_info->instruction_counter];
-
-        printf("ХММММ");
+        // if (cmd == 13) {
+        //     fprintf(stderr, "AA\n");
+        // }
+        //printf("%d\n", processor_info->instruction_counter);
         printf("...%d %d- \n", cmd, processor_info->instruction_counter);
         if (cmd <= NUM_COMMANDS) {
             CHECK_ERROR_RETURN(commands_processor[cmd].func(processor_info)); //

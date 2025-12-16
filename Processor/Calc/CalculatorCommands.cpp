@@ -216,8 +216,10 @@ ProcessorErr_t Call_C(Processor *processor_info) {
     assert(processor_info);
 
     ProcessorErr_t err = kProcessorSuccess;
-    CHECK_PROCESSOR_RETURN(StackErrToProcessorErr(StackPush(&processor_info->call_array, (Stack_t)processor_info->instruction_counter + 2)));
-    processor_info->instruction_counter = (size_t)processor_info->code[processor_info->instruction_counter + 1];
+    processor_info->instruction_counter ++;
+
+    CHECK_PROCESSOR_RETURN(StackErrToProcessorErr(StackPush(&processor_info->call_array, (Stack_t)processor_info->instruction_counter + 1)));
+    processor_info->instruction_counter = (size_t)processor_info->code[processor_info->instruction_counter];
 
     return kProcessorSuccess;
 }
@@ -227,6 +229,7 @@ ProcessorErr_t Ret_C(Processor *processor_info) {
 
     ProcessorErr_t err = kProcessorSuccess;
     Stack_t number_pop = 0;
+    
     CHECK_PROCESSOR_RETURN(StackErrToProcessorErr(StackPop(&processor_info->call_array, &number_pop)));
     processor_info->instruction_counter = (size_t)number_pop;
     return kProcessorSuccess;
@@ -294,21 +297,22 @@ ProcessorErr_t PopM_C(Processor *processor_info) {
 ProcessorErr_t Draw_C(Processor *processor_info) {
     assert(processor_info);
 
-    werase(win);
+    //werase(win);
 
     for (int y = 0; y < 144; y++) {
         for (int x = 0; x < 192; x++) {
             size_t pos = (size_t)(y * 192 + x);
             char pixel = (processor_info->ram[pos] == 0) ? ' ' : '#';
-            mvwaddch(win, y, x * 2, pixel);
-            mvwaddch(win, y, x * 2 + 1, pixel);
+            printf("%c", pixel);
+            //mvwaddch(win, y, x * 2, pixel);
+            //mvwaddch(win, y, x * 2 + 1, pixel);
         }
     }
 
-    wrefresh(win);
-    for (volatile size_t i = 0; i < (size_t)(7 * 1e7); i++) {
-        ;
-    }
+    // wrefresh(win);
+    // for (volatile size_t i = 0; i < (size_t)(7 * 1e7); i++) {
+    //     ;
+    // }
 
     processor_info->instruction_counter ++;
     return kProcessorSuccess;
