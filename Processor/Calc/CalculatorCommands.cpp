@@ -297,22 +297,17 @@ ProcessorErr_t PopM_C(Processor *processor_info) {
 ProcessorErr_t Draw_C(Processor *processor_info) {
     assert(processor_info);
 
-    //werase(win);
+    for (size_t i = 0; i < RAM_SIZE; i++) {
+        if (processor_info->ram[i] == 0) {
+            printf(".");
+        } else {
+            printf("+");
+        }
 
-    for (int y = 0; y < 144; y++) {
-        for (int x = 0; x < 192; x++) {
-            size_t pos = (size_t)(y * 192 + x);
-            char pixel = (processor_info->ram[pos] == 0) ? ' ' : '#';
-            printf("%c", pixel);
-            //mvwaddch(win, y, x * 2, pixel);
-            //mvwaddch(win, y, x * 2 + 1, pixel);
+        if ((i + 1) % (size_t) sqrt(RAM_SIZE) == 0) {
+            printf("\n");
         }
     }
-
-    // wrefresh(win);
-    // for (volatile size_t i = 0; i < (size_t)(7 * 1e7); i++) {
-    //     ;
-    // }
 
     processor_info->instruction_counter ++;
     return kProcessorSuccess;
@@ -343,6 +338,24 @@ ProcessorErr_t Square_C(Processor *processor_info) {
     CHECK_PROCESSOR_RETURN((ProcessorErr_t)StackPush(&processor_info->stack, number * number));
 
     processor_info->instruction_counter++;
+    return kProcessorSuccess;
+}
+
+ProcessorErr_t Dump_RAM_C(Processor *processor_info) {
+    assert(processor_info);
+
+    //processor_info->instruction_counter ++;
+
+    printf("=== STACK (size: %zu) ===\n", processor_info->stack.size);
+    for (size_t i = 0; i < processor_info->stack.size; i++) {
+        printf("[%zu]: " STACK_VALUE_MODE "\n", i, processor_info->stack.data[i]);
+    }
+    printf("=========================\n");
+
+    for (size_t i = 0; i < 20; i++) {
+        printf("[%zu]: " STACK_VALUE_MODE "\n", i, processor_info->ram[i]);
+    }
+    printf("=========================\n\n\n");
     return kProcessorSuccess;
 }
 

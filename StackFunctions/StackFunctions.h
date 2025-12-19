@@ -44,10 +44,4 @@ StackErr_t StackDtor(Stack_Info *stk);
 void StackDump(Stack_Info stk, const char *func_name, int line, const char *file_from, unsigned int error, const char *stk_name);
 StackErr_t CheckError(Stack_Info *stk);
 
-StackErr_t CallStackCtor(CallStack *call_stack, size_t initial_capacity);
-StackErr_t CallStackResize(CallStack *call_stack, size_t new_capacity);
-StackErr_t CallStackPush(CallStack *call_stack, CallFrame frame);
-StackErr_t CallStackPop(CallStack *call_stack, CallFrame *out);
-void CallStackDtor(CallStack *call_stack);
-
 #endif //STACK_FUNCTIONS_H_

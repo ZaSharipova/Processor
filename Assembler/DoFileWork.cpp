@@ -55,11 +55,6 @@ AsmError PrepareToAssemble(const Files *files, FileInfo *file_info, AssemblerInf
 
     AllBufRead(files, file_info);
 
-    // GetLabels(file_info, labels);
-    // for (int i = 0; i < 10; i++) {
-    //     printf("%s ", labels->data[i].name);
-    // }
-    // return kNoAsmError;
     return GetLabels(file_info, assembler);
 }
 
@@ -67,8 +62,6 @@ AsmError DoAsm(FileInfo *file_info, const Files *in_out_files, AssemblerInfo *as
     assert(file_info);
     assert(in_out_files);
     assert(assembler);
-
-    // AllBufRead(in_out_files, file_info);
 
     for (size_t i = 0; i < (size_t)file_info->count_lines; i++) {
         LineInfo *line = &file_info->text_ptr[i];
@@ -132,12 +125,12 @@ static AsmError ParseRValue(TypeOfArg arg_type, const char *line_ptr, int *out_v
     }
 
     char *ptr = arg_str;
+    char inner[32] = "";
     if (arg_type == kRamArg && (arg_str[0] != '[' || arg_str[strlen(arg_str) - 1] != ']')) {
         fprintf(stderr, "Error: memory argument must be in brackets, got '%s'\n", arg_str);
         return kErrorParsingAsm;
     }
     if (arg_type == kRamArg) {
-        char inner[32] = "";
         size_t arg_len = strlen(arg_str);
         strncpy(inner, arg_str + 1, arg_len - 2);
         inner[arg_len - 2] = '\0';
@@ -150,9 +143,11 @@ static AsmError ParseRValue(TypeOfArg arg_type, const char *line_ptr, int *out_v
             return kNoAsmError;
 
         }
+    } else {
+        strcpy(inner, ptr);
     }
 
-    int to_int_result =  StringToInt(ptr);
+    int to_int_result =  StringToInt(inner);
     if (to_int_result < 0) {
         return kErrorParsingAsm;
     }
@@ -208,8 +203,8 @@ static AsmError DoScanfAndConvert(const char *line_ptr, FileInfo *file_info, Ass
     line_ptr = SkipWhitespace(line_ptr);
     int scanf_num = 0;
     AsmError err = kNoAsmError;
+
     scanf_num = sscanf(line_ptr, "%s", cmd_name);
-    // printf("%s ", cmd_name);
     if (scanf_num <= 0) {
         return kErrorZeroArgs;
     }
@@ -252,28 +247,6 @@ static AsmError DoScanfAndConvert(const char *line_ptr, FileInfo *file_info, Ass
     return kNoAsmError;
 }
 
-// AsmError DoScanfArg(const char *line_ptr, CommandsInfo *commands_info, AssemblerInfo *assembler, bool flag_push, int *num_instructions) {
-//     assert(line_ptr);
-//     assert(commands_info);
-//     assert(assembler);
-//     assert(num_instructions);
-
-//     int arg_int = 0;
-//     switch(commands_info->type_of_arg) {
-//         case (kIntArg): {
-//             int scanf_num = sscanf(SkipWhitespace(line_ptr), "%d", &arg_int);
-//             if (scanf_num <= 0) {
-//                 return kErrorZeroArgs;
-//             }
-//         }
-//         case (kRamArg):
-//         case (kRaxArg):
-
-//         case (kLabelArg):
-
-//     }
-// }
-
 AsmError DoParse(const char *line, FileInfo *file_info, AssemblerInfo *assembler) {
     assert(line);
     assert(file_info);
@@ -288,10 +261,9 @@ AsmError DoParse(const char *line, FileInfo *file_info, AssemblerInfo *assembler
     int num_instructions = 0;
     AsmError err = DoScanfAndConvert(line_ptr, file_info, assembler, flag_push_stack, &num_instructions);
     if (err != kNoAsmError) {
-            //printf("\n %s ", line_ptr);
         return err;
     }
-    // *code_size = num_instructions;
+
     return kNoAsmError;
 }
 
@@ -331,21 +303,17 @@ static AsmError GetLabels(FileInfo *file_info, AssemblerInfo *assembler) {
 
         } else {
             const char *line_ptr = line->start_ptr;
-            // printf("%s %d\n", line_ptr, i);
 
             bool flag_push_stack = false;
             int args_count = 0;
             AsmError scanf_err = kNoAsmError;
             scanf_err = DoScanfAndConvert(line_ptr, file_info, assembler, flag_push_stack, &args_count);
-            //printf("%d ", args_count);
 
             if (scanf_err != kNoAsmError) {
                 printf("Scanf error in %s.", line_ptr);
                 return scanf_err;
             }
 
-
-            // int args_count = sscanf(line_ptr, "%s %s", command, arg_str);
             if (args_count == 0) {
                 printf("Error parse command address: %d\n", current_address);
                 return kErrorZeroArgs;
@@ -393,7 +361,6 @@ AsmError AssemblerCtor(AssemblerInfo *assembler) {
     assembler->commands_counter = 0;
 
     for (size_t i = 0; i < MAX_ARR_SIZE; i++) {
-        // Assembler->labels.data[i].name[0] = "";
         assembler->labels.data[i].address = 0;
         assembler->labels.data[i].name[0] = '\0';
     }
@@ -401,8 +368,3 @@ AsmError AssemblerCtor(AssemblerInfo *assembler) {
     assembler->labels.count = 0; //
     return (AsmError)StackCtor(&assembler->data, 1);
 }
-
-// AsmError AssemblerDtor(AssemblerInfo *Assembler) {
-//     assert(Assembler);
-
-// }

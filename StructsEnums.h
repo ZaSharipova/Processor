@@ -11,7 +11,7 @@ const Stack_t POISON = 1e6;
 #define READ_MODE "r"
 #define WRITE_MODE "w"
 
-#define RAM_SIZE 144 * 192
+#define RAM_SIZE 192 * 34
 #define REGS_SIZE 16
 
 enum ParseErr_t {
@@ -113,7 +113,7 @@ enum ReallocMode {
     err = (call);                               \
     if (err != kNoError) {                      \
         CloseLogFile();                         \
-        return DoCloseFile(&in_out_files);   \
+        return DoCloseFile(&in_out_files);      \
     }
 
 #endif //STRUCTS_ENUMS_H_

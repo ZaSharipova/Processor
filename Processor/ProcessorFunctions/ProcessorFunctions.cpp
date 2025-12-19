@@ -33,6 +33,14 @@ ProcessorErr_t ProcessorCtor(Processor *processor_info, ssize_t capacity) {
 
     StackCtor(&processor_info->call_array, capacity);
 
+    for (size_t i = 0; i < REGS_SIZE; i++) {
+        processor_info->regs[i] = 0;
+    }
+
+    for (size_t i = 0; i < RAM_SIZE; i++) {
+        processor_info->ram[i] = 0;
+    }
+
     return (ProcessorErr_t)StackCtor(&processor_info->stack, capacity);
 }
 

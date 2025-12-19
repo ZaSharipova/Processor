@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include "AssemblerStructs.h"
-//#include "CalculatorCommands.h"
 #include "Hash.h"
 
 int CommandToEnumPos(const char *command) {
@@ -15,7 +14,7 @@ int CommandToEnumPos(const char *command) {
 
     uint32_t command_hash = HashData(command, (ssize_t)strlen(command));
 
-    CommandsInfo *result = (CommandsInfo *)bsearch(&command_hash, commands, 29, sizeof(CommandsInfo), CompareCommandHash);
+    CommandsInfo *result = (CommandsInfo *)bsearch(&command_hash, commands, 30, sizeof(CommandsInfo), CompareCommandHash);
     
     if (result != NULL) {
         return (int)(result - commands);
