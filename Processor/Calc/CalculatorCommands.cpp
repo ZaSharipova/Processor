@@ -299,9 +299,9 @@ ProcessorErr_t Draw_C(Processor *processor_info) {
 
     for (size_t i = 0; i < RAM_SIZE; i++) {
         if (processor_info->ram[i] == 0) {
-            printf(".");
+            printf("..");
         } else {
-            printf("+");
+            printf("++");
         }
 
         if ((i + 1) % (size_t) sqrt(RAM_SIZE) == 0) {

@@ -27,14 +27,15 @@ int CompareCommandHash(const void *key, const void *element) {
     uint32_t target_hash = *(const uint32_t *)key;
     const CommandsInfo *cmd = (const CommandsInfo *)element;
 
-    if (target_hash < cmd->hash)
+    if (target_hash < cmd->hash) {
         return -1;
 
-    else if (target_hash > cmd->hash)
+    } else if (target_hash > cmd->hash) {
         return 1;
 
-    else
+    } else {
         return 0;
+    }
 }
 
 const char *EnumToCommand(int command_num) {

@@ -6,7 +6,7 @@
 #include "AssemblerEnums.h"
 #include "Commands.h"
 
-#define MAX_ARR_SIZE 20
+#define MAX_ARR_SIZE 23
 typedef struct {
     char name[MAX_ARR_SIZE];
     int address;

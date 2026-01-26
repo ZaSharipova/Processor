@@ -15,7 +15,7 @@ AsmError DoHash(void) {
         return err;
     }
 
-    qsort(commands, 29, sizeof(CommandsInfo), CompareHash);
+    qsort(commands, 30, sizeof(CommandsInfo), CompareHash);
     return kNoAsmError;
 }
 

@@ -57,8 +57,9 @@ int IsBlankLine(const char *start, size_t len) {
     assert(start);
 
     for (size_t i = 0; i < len; i++) {
-        if (!isspace((unsigned char)start[i]))
+        if (!isspace((unsigned char)start[i])) {
             return 0;
+        }
     }
 
     return 1;
@@ -67,8 +68,9 @@ int IsBlankLine(const char *start, size_t len) {
 int CountLines(const char *buf) {
     int count = 0;
     for (size_t i = 0; buf[i] != '\0'; i++) {
-        if (buf[i] == '\n')
+        if (buf[i] == '\n') {
             count++;
+        }
     }
 
     return count;
@@ -103,7 +105,7 @@ void ParseBuf(FileInfo *file_info) {
                 //     ptr = semicolon_is + 1;
                 // }
 
-                if (*ptr != '\0') {
+                if (*ptr != '\0' && !(ptr[0] == '/' && ptr[1] == '/')) {
                     file_info->text_ptr[line_idx].start_ptr = line_start;
                     file_info->text_ptr[line_idx].end_ptr = &(file_info->buf_ptr[i - 1]);
                     file_info->text_ptr[line_idx].size = (size_t)(&(file_info->buf_ptr[i - 1]) - line_start) + 1;
@@ -160,7 +162,7 @@ void PrintError(AsmError err_type) {
         break;
 
     default:
-        fprintf(stderr, "Unlnown command.");
+        fprintf(stderr, "Unknown command.");
     }
 }
 
