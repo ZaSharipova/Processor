@@ -10,9 +10,11 @@
         Processor name = {};
 #else 
     #define INIT_PROCESSOR_INFO(name) \
-        Processor name = { \
-            .stack.create_var_info.file_name = __FILE__, .stack.create_var_info.func_name = __func__, \
-            .stack.create_var_info.var = #name, .stack.create_var_info.line = __LINE__} 
+        Processor name = {}; \
+        name.stack.create_var_info.file_name = __FILE__; \
+        name.stack.create_var_info.func_name = __func__; \
+        name.stack.create_var_info.var = #name; \
+        name.stack.create_var_info.line = __LINE__;
 #endif
 
 #define CHECK_PROCESSOR_RETURN(call) \

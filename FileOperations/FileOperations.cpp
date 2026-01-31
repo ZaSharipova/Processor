@@ -152,6 +152,7 @@ void PrintError(AsmError err_type) {
 
     case (kNoAvailableCommand):
         fprintf(stderr, "Not available command entered.");
+        break;
 
     case (kErrorZeroArgs):
         fprintf(stderr, "No args beeing entered.");
@@ -275,7 +276,6 @@ ProcessorErr_t Read(FILE *fin, Stack_t *code[], size_t *code_size) {
     // for (size_t i = 0; i < *code_size; ++i) {
     //     fprintf(stderr, "DEBUG code[%zu] = %d\n", i, (int)(*code)[i]);
     // }
-
 
     return kProcessorSuccess;
 }

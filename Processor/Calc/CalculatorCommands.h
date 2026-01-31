@@ -19,7 +19,6 @@
 
 ProcessorErr_t Push_C(Processor *processor_info);
 ProcessorErr_t Pop_C(Processor *processor_info, Stack_t *number_pop) ;
-ProcessorErr_t PopR_C(Processor *processor_info);
 // ProcessorErr_t Div_C(Processor *processor_info);
 ProcessorErr_t Sqrt_C(Processor *processor_info);
 

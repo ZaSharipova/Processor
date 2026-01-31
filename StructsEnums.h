@@ -113,6 +113,7 @@ enum ReallocMode {
     err = (call);                               \
     if (err != kNoError) {                      \
         CloseLogFile();                         \
+        ProcessorDtor(&processor_info);         \
         return DoCloseFile(&in_out_files);      \
     }
 

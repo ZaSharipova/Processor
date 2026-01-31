@@ -12,6 +12,8 @@
 #include "CalculatorCommands.h"
 
 static ReallocMode CheckSize(ssize_t size, ssize_t *capacity);
+void FillPoison(Stack_Info *stk);
+StackErr_t StackTop(Stack_Info stk, Stack_t *value);
 
 // const char *GetErrorString[] = {
 //     "Processor null pointer",
@@ -31,15 +33,19 @@ static ReallocMode CheckSize(ssize_t size, ssize_t *capacity);
 // };
 
 const char *GetErrorString[] = {
-    [16] = "Stack: empty",
-    [17] = "Stack: null pointer",
-    [18] = "Stack: size error",
-    [19] = "Stack: negative capacity",
-    [20] = "Stack: negative size",
-    [21] = "Stack: wrong canary left",
-    [22] = "Stack: wrong canary right",
-    [23] = "Stack: hash mismatch",
-    [24] = "Stack: no alloc memory"
+    nullptr, nullptr, nullptr, nullptr, nullptr,
+    nullptr, nullptr, nullptr, nullptr, nullptr,
+    nullptr, nullptr, nullptr, nullptr, nullptr,
+    nullptr,
+    "Stack: empty",
+    "Stack: null pointer",
+    "Stack: size error",
+    "Stack: negative capacity",
+    "Stack: negative size",
+    "Stack: wrong canary left",
+    "Stack: wrong canary right",
+    "Stack: hash mismatch",
+    "Stack: no alloc memory"
 };
 
 StackErr_t StackCtor(Stack_Info *stk, ssize_t capacity) {

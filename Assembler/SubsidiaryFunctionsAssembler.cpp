@@ -5,6 +5,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "AssemblerStructs.h"
 #include "Hash.h"

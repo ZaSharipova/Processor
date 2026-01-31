@@ -9,20 +9,11 @@
 #include "AssemblerStructs.h"
 #include "FileStructs.h"
 
-// #define CHECK_ERROR_RETURN(call, err) \
-//     if (err != kNoError) { \
-//         free(command); \
-//         free(arg_str); \
-//         return err; \
-//     }
-
 AsmError AssemblerCtor(AssemblerInfo *Assembler);
 
 void AllBufRead(const Files *in_out_files, FileInfo *file_info);
-// void WriteCommand(FILE *output, int command, int has_arg, int arg);
 AsmError DoParse(const char *line, FileInfo *file_info, AssemblerInfo *assembler);
 AsmError DoAsm(FileInfo *file_info, const Files *in_out_files, AssemblerInfo *assembler);
-// void WriteCommandsOut(FILE *output, FileInfo *file_info, const Stack_Info *buf_out);
 
 AsmError PrepareToAssemble(const Files *files, FileInfo *file_info, AssemblerInfo *assembler);
 
@@ -33,5 +24,7 @@ int FindLabel(const Labels *labels, const char *name);
 
 void PrintAssemblerListing(FILE *listing_file, const AssemblerInfo *assembler);
 void PrintReadableCode(const Stack_Info *code);
+
+Stack_t GetStackElem(const Stack_Info *buf_out, size_t pos);
 
 #endif //HANDLE_FILE_WORK_H_

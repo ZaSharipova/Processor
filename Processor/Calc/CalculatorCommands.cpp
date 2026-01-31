@@ -347,8 +347,8 @@ ProcessorErr_t Dump_RAM_C(Processor *processor_info) {
     //processor_info->instruction_counter ++;
 
     printf("=== STACK (size: %zu) ===\n", processor_info->stack.size);
-    for (size_t i = 0; i < processor_info->stack.size; i++) {
-        printf("[%zu]: " STACK_VALUE_MODE "\n", i, processor_info->stack.data[i]);
+    for (int i = 0; i < processor_info->stack.size; i++) {
+        printf("[%d]: " STACK_VALUE_MODE "\n", i, processor_info->stack.data[i]);
     }
     printf("=========================\n");
 

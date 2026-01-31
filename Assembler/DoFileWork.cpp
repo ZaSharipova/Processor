@@ -21,15 +21,15 @@
 
 #define MAX_ARG_LEN 16
 static AsmError GetLabels(FileInfo *file_info, AssemblerInfo *Assembler);
-void AddLabel(Labels *labels, const char *name, int address);
-int FindLabel(const Labels *labels, const char *name);
+// void AddLabel(Labels *labels, const char *name, int address);
+// int FindLabel(const Labels *labels, const char *name);
 static void WriteCommandsOut(FILE *output, FileInfo *file_info, const Stack_Info *buf_out);
 static AsmError DoScanfAndConvert(const char *line_ptr, FileInfo *file_info, AssemblerInfo *Assembler, bool flag_push, int *num_instructions);
 static AsmError ParseLabelArgument(const char *arg_str, int *out_val, Labels *labels, bool do_parse);
 
-static AsmError DoScanfAndConvert(const char *line_ptr, FileInfo *file_info, AssemblerInfo *assembler, bool flag_push, int *num_instructions);
-static AsmError GetLabels(FileInfo *file_info, AssemblerInfo *assembler);
-AsmError DoParse(const char *line, FileInfo *file_info, AssemblerInfo *assembler);
+// static AsmError DoScanfAndConvert(const char *line_ptr, FileInfo *file_info, AssemblerInfo *assembler, bool flag_push, int *num_instructions);
+// static AsmError GetLabels(FileInfo *file_info, AssemblerInfo *assembler);
+// AsmError DoParse(const char *line, FileInfo *file_info, AssemblerInfo *assembler);
 
 void AllBufRead(const Files *in_out_files, FileInfo *file_info) {
     assert(in_out_files);
@@ -197,8 +197,7 @@ static AsmError DoScanfAndConvert(const char *line_ptr, FileInfo *file_info, Ass
     assert(assembler);
     assert(num_instructions);
 
-    char cmd_name[MAX_ARG_LEN] = {}, 
-    arg_str[MAX_ARG_LEN] = {};
+    char cmd_name[MAX_ARG_LEN] = {};
 
     line_ptr = SkipWhitespace(line_ptr);
     int scanf_num = 0;
@@ -209,7 +208,7 @@ static AsmError DoScanfAndConvert(const char *line_ptr, FileInfo *file_info, Ass
         return kErrorZeroArgs;
     }
 
-    char *ptr = (char *)SkipWhitespace(line_ptr + strlen(cmd_name));
+    const char *ptr = SkipWhitespace(line_ptr + strlen(cmd_name));
    
     int command_to_enum_pos = CommandToEnumPos(cmd_name);
 
@@ -310,7 +309,7 @@ static AsmError GetLabels(FileInfo *file_info, AssemblerInfo *assembler) {
             scanf_err = DoScanfAndConvert(line_ptr, file_info, assembler, flag_push_stack, &args_count);
 
             if (scanf_err != kNoAsmError) {
-                printf("Scanf error in %s.", line_ptr);
+                printf("Scanf error in %s in line %d.", line_ptr, i + 1);
                 return scanf_err;
             }
 

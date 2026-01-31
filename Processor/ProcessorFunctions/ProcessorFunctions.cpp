@@ -87,6 +87,7 @@ ProcessorErr_t ProcessorDtor(Processor *processor_info) {
     ProcessorErr_t err = kProcessorSuccess;
     CHECK_ERROR_RETURN(ProcessorVerify(processor_info));
 
+    free(processor_info->code);
     StackDtor(&processor_info->call_array);
     StackDtor(&processor_info->stack);
     processor_info = NULL;

@@ -51,5 +51,5 @@ disasm: $(DISASM_SRC)
 # %.out: %.cpp
 # 	@$(COMP) $< -o $@
 
-# clean: 
-# 	rm *.o *.out $(TARGET)
+clean: 
+	@rm *.out $(TARGET)
