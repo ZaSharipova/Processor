@@ -19,7 +19,7 @@
 #include "DoLogFile.h"
 #include "Commands.h"
 
-#define MAX_ARG_LEN 16
+#define MAX_ARG_LEN 20
 static AsmError GetLabels(FileInfo *file_info, AssemblerInfo *Assembler);
 // void AddLabel(Labels *labels, const char *name, int address);
 // int FindLabel(const Labels *labels, const char *name);

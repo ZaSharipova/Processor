@@ -7,11 +7,11 @@
 CommandsInfo commands[] = {
     {"HLT",    0, kHlt,    sizeof("HLT")    - 1, kNoArg,       LAST_FIELD(0, Hlt_C)},
     {"PUSHR",  1, kPushR,  sizeof("PUSHR")  - 1, kRaxArg,      LAST_FIELD(0, PushR_C)},
-    {"PUSHMN",  1, kPushMN,  sizeof("PUSHMN")  - 1, kRamArg,   LAST_FIELD(0, PushMN_C)},
+    {"PUSHMN", 1, kPushMN, sizeof("PUSHMN") - 1, kRamArg,      LAST_FIELD(0, PushMN_C)},
     {"PUSHM",  1, kPushM,  sizeof("PUSHM")  - 1, kRamArg,      LAST_FIELD(0, PushM_C)},
     {"PUSH",   1, kPush,   sizeof("PUSH")   - 1, kIntArg,      LAST_FIELD(0, Push_C)},
     {"POPR",   1, kPopR,   sizeof("POPR")   - 1, kRaxArg,      LAST_FIELD(0, PopR_C)},
-    {"POPMN",   1, kPopMN,   sizeof("POPMN")   - 1, kRamArg,   LAST_FIELD(0, PopMN_C)},
+    {"POPMN",  1, kPopMN,  sizeof("POPMN")  - 1, kRamArg,      LAST_FIELD(0, PopMN_C)},
     {"POPM",   1, kPopM,   sizeof("POPM")   - 1, kRamArg,      LAST_FIELD(0, PopM_C)},
     {"ADD",    0, kAdd,    sizeof("ADD")    - 1, kNoArg,       LAST_FIELD(0, Add_C)},
     {"SUB",    0, kSub,    sizeof("SUB")    - 1, kNoArg,       LAST_FIELD(0, Sub_C)},

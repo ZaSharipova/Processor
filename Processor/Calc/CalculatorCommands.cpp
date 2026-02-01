@@ -297,14 +297,14 @@ ProcessorErr_t PopM_C(Processor *processor_info) {
 ProcessorErr_t Draw_C(Processor *processor_info) {
     assert(processor_info);
 
-    for (size_t i = 0; i < RAM_SIZE; i++) {
+    for (size_t i = 0; i < 1024; i++) {
         if (processor_info->ram[i] == 0) {
             printf("..");
         } else {
             printf("++");
         }
 
-        if ((i + 1) % (size_t) sqrt(RAM_SIZE) == 0) {
+        if ((i + 1) % (size_t) sqrt(1024) == 0) {
             printf("\n");
         }
     }
